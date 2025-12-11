@@ -6,11 +6,9 @@ import AddToCartButton from "@/components/productos/AddToCartButton";
 import RelatedProducts from "@/components/productos/RelatedProducts";
 import type { Metadata } from "next";
 
-// Forzar regeneración dinámica
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-// Desactivar generación estática
 export async function generateStaticParams(): Promise<{ slug: string }[]> {
   return [];
 }
@@ -19,17 +17,12 @@ interface ProductDetailProps {
   params: Promise<{ slug: string }>;
 }
 
-/* =======================
-   Helpers imágenes
-======================= */
 function parsePgTextArray(value: unknown): string[] {
   if (!value) return [];
   if (Array.isArray(value)) return value.filter(Boolean) as string[];
   if (typeof value === "string") {
-    // Formatos típicos: "{/img/a.jpg,/img/b.jpg}" o '["/img/a.jpg","/img/b.jpg"]'
     const s = value.trim();
     if (!s) return [];
-    // Quitar llaves { } o [ ]
     const trimmed = s.replace(/^[{\[]|[}\]]$/g, "");
     if (!trimmed) return [];
     return trimmed
@@ -41,7 +34,6 @@ function parsePgTextArray(value: unknown): string[] {
 }
 
 function buildFallbackFromSlug(slug: string, count = 6): string[] {
-  // Genera /img/productos/<slug>-1.jpg ... -6.jpg
   return Array.from(
     { length: count },
     (_, i) => `/img/productos/${slug}-${i + 1}.jpg`
@@ -52,10 +44,6 @@ function unique<T>(arr: T[]): T[] {
   return Array.from(new Set(arr));
 }
 
-/* =======================
-   Fetch producto
-======================= */
-// Función para obtener el producto (temporal - reemplazar con API real)
 async function getProductoBySlug(slug: string) {
   try {
     const res = await fetch(
@@ -80,11 +68,11 @@ export async function generateMetadata({
   const producto = await getProductoBySlug(slug);
 
   if (!producto) {
-    return { title: "Producto no encontrado - motef" };
+    return { title: "Producto no encontrado - MOTEF" };
   }
 
   return {
-    title: `${producto.nombre} - motef`,
+    title: `${producto.nombre} - MOTEF`,
     description:
       producto.descripcion_corta || producto.descripcion || producto.nombre,
     openGraph: {
@@ -98,16 +86,12 @@ export async function generateMetadata({
 export default async function ProductoDetail({ params }: ProductDetailProps) {
   const { slug } = await params;
 
-  console.log(`🔍 [ProductDetail] Cargando producto: "${slug}"`);
-
   const producto = await getProductoBySlug(slug);
 
   if (!producto || !producto.activo) {
-    console.log(`❌ [ProductDetail] Producto no encontrado: ${slug}`);
     return notFound();
   }
 
-  // --- Normalización de imágenes (principal + adicionales + fallback de hasta 6) ---
   const adicionales = parsePgTextArray(producto.imagenes_adicionales);
   const fallback = buildFallbackFromSlug(producto.slug, 6);
 
@@ -152,7 +136,6 @@ export default async function ProductoDetail({ params }: ProductDetailProps) {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Breadcrumbs y Back */}
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
           <div className="flex items-center justify-between">
@@ -164,7 +147,6 @@ export default async function ProductoDetail({ params }: ProductDetailProps) {
               <span className="text-sm font-medium">Volver al catálogo</span>
             </Link>
 
-            {/* Breadcrumbs */}
             <nav className="hidden md:flex items-center gap-2 text-sm text-gray-600">
               <Link href="/" className="hover:text-gray-900">
                 Inicio
@@ -193,22 +175,18 @@ export default async function ProductoDetail({ params }: ProductDetailProps) {
         </div>
       </div>
 
-      {/* Contenido principal */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
-          {/* Galería de imágenes */}
           <div>
             <ProductGallery imagenes={imagenes} nombre={producto.nombre} />
           </div>
 
-          {/* Información del producto */}
           <div className="space-y-6">
-            {/* Categoría y SKU */}
             <div className="flex items-center justify-between">
               {producto.categoria && (
                 <Link
                   href={`/productos?categoria=${producto.categoria.slug}`}
-                  className="text-sm font-semibold text-blue-600 hover:text-blue-700 uppercase tracking-wide"
+                  className="text-sm font-semibold text-motef-primary hover:text-motef-primary-dark uppercase tracking-wide"
                 >
                   {producto.categoria.nombre}
                 </Link>
@@ -216,13 +194,11 @@ export default async function ProductoDetail({ params }: ProductDetailProps) {
               <span className="text-sm text-gray-500">SKU: {producto.sku}</span>
             </div>
 
-            {/* Título */}
             <div>
               <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-3">
                 {producto.nombre}
               </h1>
 
-              {/* Rating y ventas */}
               <div className="flex items-center gap-4 text-sm">
                 {producto.destacado && (
                   <div className="flex items-center gap-1 text-amber-500">
@@ -238,7 +214,6 @@ export default async function ProductoDetail({ params }: ProductDetailProps) {
               </div>
             </div>
 
-            {/* Precio */}
             <div className="bg-gray-50 rounded-xl p-6 border border-gray-200">
               {tieneDescuento && (
                 <div className="flex items-center gap-3 mb-2">
@@ -257,34 +232,28 @@ export default async function ProductoDetail({ params }: ProductDetailProps) {
                 <span className="text-gray-600">ARS</span>
               </div>
               <p className="text-sm text-gray-600 mt-2">
-                ✓ Envío gratis desde la 2da unidad
+                ✓ Pago seguro con Mercado Pago
               </p>
             </div>
 
-            {/* Stock */}
             {stockBadge()}
 
-            {/* Descripción corta */}
             {producto.descripcion_corta && (
               <p className="text-lg text-gray-700 leading-relaxed">
                 {producto.descripcion_corta}
               </p>
             )}
 
-            {/* Botón agregar al carrito */}
             <AddToCartButton producto={producto} />
 
-            {/* Beneficios */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-6 border-t border-gray-200">
               <div className="flex items-start gap-3">
-                <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <Truck size={20} className="text-blue-600" />
+                <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Truck size={20} className="text-motef-primary" />
                 </div>
                 <div>
-                  <p className="font-semibold text-gray-900 text-sm">
-                    Envío gratis
-                  </p>
-                  <p className="text-xs text-gray-600">Desde 2da unidad</p>
+                  <p className="font-semibold text-gray-900 text-sm">Envíos</p>
+                  <p className="text-xs text-gray-600">A todo el país</p>
                 </div>
               </div>
 
@@ -315,7 +284,6 @@ export default async function ProductoDetail({ params }: ProductDetailProps) {
           </div>
         </div>
 
-        {/* Descripción completa */}
         {producto.descripcion && (
           <div className="mt-12 bg-white rounded-xl border border-gray-200 p-8">
             <h2 className="text-2xl font-bold text-gray-900 mb-6">
@@ -327,7 +295,6 @@ export default async function ProductoDetail({ params }: ProductDetailProps) {
           </div>
         )}
 
-        {/* Especificaciones */}
         <div className="mt-8 bg-white rounded-xl border border-gray-200 p-8">
           <h2 className="text-2xl font-bold text-gray-900 mb-6">
             Especificaciones
@@ -366,7 +333,6 @@ export default async function ProductoDetail({ params }: ProductDetailProps) {
           </div>
         </div>
 
-        {/* Productos relacionados */}
         <div className="mt-12">
           <RelatedProducts
             categoriaId={producto.categoria_id}

@@ -1,4 +1,3 @@
-/** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
     remotePatterns: [
@@ -67,7 +66,7 @@ const nextConfig = {
         headers: [
           {
             key: "Cache-Control",
-            value: "public, max-age=3600", 
+            value: "public, max-age=3600",
           },
           {
             key: "Access-Control-Allow-Origin",
@@ -102,7 +101,7 @@ const nextConfig = {
 
   async rewrites() {
     return [
-       {
+      {
         source: "/temp/uploads/:path*",
         destination: "/api/serve-temp/:path*",
       },
@@ -117,14 +116,12 @@ const nextConfig = {
 
   logging: {
     fetches: {
-      fullUrl: process.env.NODE_ENV === "development", // ✅ Solo en desarrollo
+      fullUrl: process.env.NODE_ENV === "development",
     },
   },
 
-  // ✅ AGREGADO: Configuración adicional para archivos estáticos
   trailingSlash: false,
 
-  // ✅ AGREGADO: Configuración de output para diferentes entornos
   ...(process.env.NODE_ENV === "production" && {
     output: "standalone",
   }),

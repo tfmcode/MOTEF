@@ -1,47 +1,110 @@
-// src/app/api/admin/productos/[id]/route.ts
-import { NextRequest, NextResponse } from "next/server";
-import { verifyJwt } from "@/lib/auth";
+import { NextResponse } from "next/server";
 import pool from "@/lib/db";
+import { z } from "zod";
+import { createApiHandler } from "@/lib/security/apiValidation";
+import { apiRateLimit } from "@/lib/security/rateLimit";
+import { sanitizeString, sanitizeInteger } from "@/lib/security/sanitize";
+import { securityLogger } from "@/lib/security/logger";
+import { generarSlug } from "@/lib/slugify";
 
-// Generar slug automático
-function generarSlug(nombre: string): string {
-  return nombre
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/\s+/g, "-")
-    .replace(/[^a-z0-9\-]/g, "")
-    .replace(/\-+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}
+const UpdateProductoSchema = z.object({
+  nombre: z
+    .string()
+    .min(2, "El nombre debe tener al menos 2 caracteres")
+    .transform(sanitizeString),
+  descripcion: z
+    .string()
+    .optional()
+    .transform((val) => (val ? sanitizeString(val) : undefined)),
+  descripcion_corta: z
+    .string()
+    .optional()
+    .transform((val) => (val ? sanitizeString(val) : undefined)),
+  precio: z.number().positive("El precio debe ser positivo"),
+  precio_anterior: z.number().positive().optional(),
+  stock: z.number().int().min(0, "El stock no puede ser negativo"),
+  categoria_id: z.number().int().positive(),
+  imagen_url: z.string().url().optional(),
+  sku: z.string().min(1, "SKU es requerido").transform(sanitizeString),
+  peso_gramos: z.number().int().positive().optional(),
+  destacado: z.boolean(),
+  activo: z.boolean(),
+});
 
-/**
- * PUT /api/admin/productos/[id]
- * Actualiza un producto existente
- */
-export async function PUT(
-  req: NextRequest,
-  context: { params: Promise<{ id: string }> }
-) {
-  const token = req.cookies.get("token")?.value;
-  const user = token && verifyJwt(token);
+type UpdateProductoBody = z.infer<typeof UpdateProductoSchema>;
 
-  if (!user || user.rol !== "admin") {
-    return NextResponse.json({ message: "No autorizado" }, { status: 403 });
-  }
+export const GET = createApiHandler(
+  {
+    requireAuth: true,
+    allowedRoles: ["admin"],
+    rateLimit: apiRateLimit,
+    allowedMethods: ["GET"],
+  },
+  async (req) => {
+    const pathId = req.nextUrl.pathname.split("/").pop();
+    const productoId = sanitizeInteger(pathId);
 
-  try {
-    const { id } = await context.params;
-    const productoId = parseInt(id);
-
-    if (isNaN(productoId)) {
+    if (!productoId) {
       return NextResponse.json(
         { message: "ID de producto inválido" },
         { status: 400 }
       );
     }
 
-    const body = await req.json();
+    try {
+      const query = `
+        SELECT 
+          p.*,
+          c.nombre as categoria_nombre,
+          c.slug as categoria_slug
+        FROM producto p
+        LEFT JOIN categoria c ON p.categoria_id = c.id
+        WHERE p.id = $1;
+      `;
+
+      const { rows } = await pool.query(query, [productoId]);
+
+      if (rows.length === 0) {
+        return NextResponse.json(
+          { message: "Producto no encontrado" },
+          { status: 404 }
+        );
+      }
+
+      return NextResponse.json({
+        success: true,
+        data: rows[0],
+      });
+    } catch (error) {
+      console.error("❌ Error al obtener producto:", error);
+      return NextResponse.json(
+        { message: "Error al obtener producto" },
+        { status: 500 }
+      );
+    }
+  }
+);
+
+export const PUT = createApiHandler(
+  {
+    requireAuth: true,
+    allowedRoles: ["admin"],
+    schema: UpdateProductoSchema,
+    rateLimit: apiRateLimit,
+    allowedMethods: ["PUT"],
+    maxBodySize: 10240,
+  },
+  async (req, { body, user, ip }) => {
+    const pathId = req.nextUrl.pathname.split("/").pop();
+    const productoId = sanitizeInteger(pathId);
+
+    if (!productoId) {
+      return NextResponse.json(
+        { message: "ID de producto inválido" },
+        { status: 400 }
+      );
+    }
+
     const {
       nombre,
       descripcion,
@@ -55,242 +118,195 @@ export async function PUT(
       peso_gramos,
       destacado,
       activo,
-    } = body;
+    } = body as UpdateProductoBody;
 
-    // Validaciones
-    if (!nombre || !sku || !precio || !categoria_id) {
-      return NextResponse.json(
-        { message: "Faltan campos obligatorios" },
-        { status: 400 }
+    try {
+      const checkQuery = "SELECT id FROM producto WHERE id = $1";
+      const checkResult = await pool.query(checkQuery, [productoId]);
+
+      if (checkResult.rows.length === 0) {
+        return NextResponse.json(
+          { message: "Producto no encontrado" },
+          { status: 404 }
+        );
+      }
+
+      const skuCheck = await pool.query(
+        "SELECT id FROM producto WHERE sku = $1 AND id != $2",
+        [sku, productoId]
       );
-    }
 
-    // Verificar que el producto existe
-    const checkQuery = "SELECT id FROM producto WHERE id = $1";
-    const checkResult = await pool.query(checkQuery, [productoId]);
+      if (skuCheck.rows.length > 0) {
+        return NextResponse.json(
+          { message: "El SKU ya existe en otro producto" },
+          { status: 400 }
+        );
+      }
 
-    if (checkResult.rows.length === 0) {
-      return NextResponse.json(
-        { message: "Producto no encontrado" },
-        { status: 404 }
-      );
-    }
+      const slug = generarSlug(nombre);
 
-    // Verificar SKU único (excluyendo el producto actual)
-    const skuCheck = await pool.query(
-      "SELECT id FROM producto WHERE sku = $1 AND id != $2",
-      [sku, productoId]
-    );
+      const updateQuery = `
+        UPDATE producto
+        SET 
+          nombre = $1,
+          slug = $2,
+          descripcion = $3,
+          descripcion_corta = $4,
+          precio = $5,
+          precio_anterior = $6,
+          stock = $7,
+          categoria_id = $8,
+          imagen_url = $9,
+          sku = $10,
+          peso_gramos = $11,
+          destacado = $12,
+          activo = $13,
+          fecha_actualizacion = NOW()
+        WHERE id = $14
+        RETURNING *;
+      `;
 
-    if (skuCheck.rows.length > 0) {
-      return NextResponse.json(
-        { message: "El SKU ya existe en otro producto" },
-        { status: 400 }
-      );
-    }
+      const values = [
+        nombre,
+        slug,
+        descripcion || null,
+        descripcion_corta || null,
+        precio,
+        precio_anterior || null,
+        stock,
+        categoria_id,
+        imagen_url || null,
+        sku,
+        peso_gramos || null,
+        destacado,
+        activo,
+        productoId,
+      ];
 
-    const slug = generarSlug(nombre);
+      const { rows } = await pool.query(updateQuery, values);
 
-    const updateQuery = `
-      UPDATE producto
-      SET 
-        nombre = $1,
-        slug = $2,
-        descripcion = $3,
-        descripcion_corta = $4,
-        precio = $5,
-        precio_anterior = $6,
-        stock = $7,
-        categoria_id = $8,
-        imagen_url = $9,
-        sku = $10,
-        peso_gramos = $11,
-        destacado = $12,
-        activo = $13,
-        fecha_actualizacion = NOW()
-      WHERE id = $14
-      RETURNING *;
-    `;
-
-    const values = [
-      nombre,
-      slug,
-      descripcion || null,
-      descripcion_corta || null,
-      precio,
-      precio_anterior || null,
-      stock,
-      categoria_id,
-      imagen_url || null,
-      sku,
-      peso_gramos || null,
-      destacado,
-      activo,
-      productoId,
-    ];
-
-    const { rows } = await pool.query(updateQuery, values);
-
-    console.log(
-      `✅ Producto actualizado: ${rows[0].nombre} (ID: ${productoId})`
-    );
-
-    return NextResponse.json({
-      success: true,
-      data: rows[0],
-      message: "Producto actualizado correctamente",
-    });
-  } catch (error) {
-    console.error("❌ Error al actualizar producto:", error);
-    return NextResponse.json(
-      { message: "Error al actualizar producto" },
-      { status: 500 }
-    );
-  }
-}
-
-/**
- * DELETE /api/admin/productos/[id]
- * Elimina un producto
- */
-export async function DELETE(
-  req: NextRequest,
-  context: { params: Promise<{ id: string }> }
-) {
-  const token = req.cookies.get("token")?.value;
-  const user = token && verifyJwt(token);
-
-  if (!user || user.rol !== "admin") {
-    return NextResponse.json({ message: "No autorizado" }, { status: 403 });
-  }
-
-  try {
-    const { id } = await context.params;
-    const productoId = parseInt(id);
-
-    if (isNaN(productoId)) {
-      return NextResponse.json(
-        { message: "ID de producto inválido" },
-        { status: 400 }
-      );
-    }
-
-    // Verificar que el producto existe
-    const checkQuery = "SELECT id, nombre FROM producto WHERE id = $1";
-    const checkResult = await pool.query(checkQuery, [productoId]);
-
-    if (checkResult.rows.length === 0) {
-      return NextResponse.json(
-        { message: "Producto no encontrado" },
-        { status: 404 }
-      );
-    }
-
-    const productoNombre = checkResult.rows[0].nombre;
-
-    // Verificar si el producto tiene pedidos asociados
-    const pedidosCheck = await pool.query(
-      "SELECT COUNT(*) as count FROM detalle_pedido WHERE producto_id = $1",
-      [productoId]
-    );
-
-    const tienePedidos = parseInt(pedidosCheck.rows[0].count) > 0;
-
-    if (tienePedidos) {
-      // Si tiene pedidos, solo desactivar en lugar de eliminar
-      await pool.query(
-        "UPDATE producto SET activo = false, fecha_actualizacion = NOW() WHERE id = $1",
-        [productoId]
+      securityLogger.dataModification(
+        user!.id,
+        user!.email,
+        "producto",
+        "UPDATE",
+        rows[0].id,
+        ip
       );
 
       console.log(
-        `⚠️ Producto desactivado (tiene pedidos): ${productoNombre} (ID: ${productoId})`
+        `✅ Producto actualizado: ${rows[0].nombre} (ID: ${productoId})`
       );
 
       return NextResponse.json({
         success: true,
-        message:
-          "El producto tiene pedidos asociados y fue desactivado en lugar de eliminarse",
-        desactivado: true,
+        data: rows[0],
+        message: "Producto actualizado correctamente",
       });
+    } catch (error) {
+      console.error("❌ Error al actualizar producto:", error);
+      return NextResponse.json(
+        { message: "Error al actualizar producto" },
+        { status: 500 }
+      );
     }
-
-    // Si no tiene pedidos, eliminar completamente
-    const deleteQuery =
-      "DELETE FROM producto WHERE id = $1 RETURNING id, nombre";
-    const { rows } = await pool.query(deleteQuery, [productoId]);
-
-    console.log(`✅ Producto eliminado: ${productoNombre} (ID: ${productoId})`);
-
-    return NextResponse.json({
-      success: true,
-      message: "Producto eliminado correctamente",
-      eliminado: true,
-      producto: rows[0],
-    });
-  } catch (error) {
-    console.error("❌ Error al eliminar producto:", error);
-    return NextResponse.json(
-      { message: "Error al eliminar producto" },
-      { status: 500 }
-    );
   }
-}
+);
 
-/**
- * GET /api/admin/productos/[id]
- * Obtiene un producto por ID (opcional, para el admin)
- */
-export async function GET(
-  req: NextRequest,
-  context: { params: Promise<{ id: string }> }
-) {
-  const token = req.cookies.get("token")?.value;
-  const user = token && verifyJwt(token);
+export const DELETE = createApiHandler(
+  {
+    requireAuth: true,
+    allowedRoles: ["admin"],
+    rateLimit: apiRateLimit,
+    allowedMethods: ["DELETE"],
+  },
+  async (req, { user, ip }) => {
+    const pathId = req.nextUrl.pathname.split("/").pop();
+    const productoId = sanitizeInteger(pathId);
 
-  if (!user || user.rol !== "admin") {
-    return NextResponse.json({ message: "No autorizado" }, { status: 403 });
-  }
-
-  try {
-    const { id } = await context.params;
-    const productoId = parseInt(id);
-
-    if (isNaN(productoId)) {
+    if (!productoId) {
       return NextResponse.json(
         { message: "ID de producto inválido" },
         { status: 400 }
       );
     }
 
-    const query = `
-      SELECT 
-        p.*,
-        c.nombre as categoria_nombre,
-        c.slug as categoria_slug
-      FROM producto p
-      LEFT JOIN categoria c ON p.categoria_id = c.id
-      WHERE p.id = $1;
-    `;
+    try {
+      const checkQuery = "SELECT id, nombre FROM producto WHERE id = $1";
+      const checkResult = await pool.query(checkQuery, [productoId]);
 
-    const { rows } = await pool.query(query, [productoId]);
+      if (checkResult.rows.length === 0) {
+        return NextResponse.json(
+          { message: "Producto no encontrado" },
+          { status: 404 }
+        );
+      }
 
-    if (rows.length === 0) {
+      const productoNombre = checkResult.rows[0].nombre;
+
+      const pedidosCheck = await pool.query(
+        "SELECT COUNT(*) as count FROM detalle_pedido WHERE producto_id = $1",
+        [productoId]
+      );
+
+      const tienePedidos = parseInt(pedidosCheck.rows[0].count) > 0;
+
+      if (tienePedidos) {
+        await pool.query(
+          "UPDATE producto SET activo = false, fecha_actualizacion = NOW() WHERE id = $1",
+          [productoId]
+        );
+
+        securityLogger.dataModification(
+          user!.id,
+          user!.email,
+          "producto",
+          "UPDATE",
+          productoId,
+          ip
+        );
+
+        console.log(
+          `⚠️ Producto desactivado (tiene pedidos): ${productoNombre} (ID: ${productoId})`
+        );
+
+        return NextResponse.json({
+          success: true,
+          message:
+            "El producto tiene pedidos asociados y fue desactivado en lugar de eliminarse",
+          desactivado: true,
+        });
+      }
+
+      const deleteQuery =
+        "DELETE FROM producto WHERE id = $1 RETURNING id, nombre";
+      const { rows } = await pool.query(deleteQuery, [productoId]);
+
+      securityLogger.dataModification(
+        user!.id,
+        user!.email,
+        "producto",
+        "DELETE",
+        productoId,
+        ip
+      );
+
+      console.log(
+        `✅ Producto eliminado: ${productoNombre} (ID: ${productoId})`
+      );
+
+      return NextResponse.json({
+        success: true,
+        message: "Producto eliminado correctamente",
+        eliminado: true,
+        producto: rows[0],
+      });
+    } catch (error) {
+      console.error("❌ Error al eliminar producto:", error);
       return NextResponse.json(
-        { message: "Producto no encontrado" },
-        { status: 404 }
+        { message: "Error al eliminar producto" },
+        { status: 500 }
       );
     }
-
-    return NextResponse.json({
-      success: true,
-      data: rows[0],
-    });
-  } catch (error) {
-    console.error("❌ Error al obtener producto:", error);
-    return NextResponse.json(
-      { message: "Error al obtener producto" },
-      { status: 500 }
-    );
   }
-}
+);

@@ -1,27 +1,21 @@
 {
-  "name": "motef - Soportes para dispositivos",
-  "short_name": "motef",
-  "description": "Tecnología útil y funcional. Soportes de calidad para celulares, tablets y notebooks.",
+  "name": "MOTEF - Tienda Online",
+  "short_name": "MOTEF",
+  "description": "Tu tienda online de confianza para motocicletas, bicicletas, aire acondicionado, piletas, artículos de auto y electrodomésticos",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#2563eb",
-  "orientation": "portrait-primary",
+  "theme_color": "#f48634",
   "icons": [
     {
-      "src": "/icon-192.png",
+      "src": "/apple-icon.png",
       "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/png"
     },
     {
-      "src": "/icon-512.png",
+      "src": "/apple-icon.png",
       "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/png"
     }
-  ],
-  "categories": ["shopping", "lifestyle", "utilities"],
-  "lang": "es-AR",
-  "dir": "ltr"
+  ]
 }

@@ -14,14 +14,12 @@ const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
   const [cartCount, setCartCount] = useState(0);
 
-  // Detectar scroll para cambiar estilo
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // TODO: Obtener cantidad de items del carrito desde el contexto/API
   useEffect(() => {
     setCartCount(0);
   }, []);
@@ -37,40 +35,37 @@ const Navbar = () => {
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Top bar - Solo desktop */}
         <div className="hidden lg:flex items-center justify-between py-2 text-sm border-b border-gray-100">
           <div className="flex items-center gap-6 text-gray-600">
             <span className="flex items-center gap-2">
               <Package className="w-4 h-4" />
-              Envío gratis desde 2da unidad
+              Envíos a todo el país
             </span>
             <span>•</span>
-            <span>Pagos seguros con Mercado Pago</span>
+            <span>Pago seguro con Mercado Pago</span>
           </div>
           <div className="flex items-center gap-4">
             <Link
               href="/#sobre-nosotros"
-              className="text-gray-600 hover:text-blue-600 transition-colors"
+              className="text-gray-600 hover:text-motef-primary transition-colors"
             >
               Sobre Nosotros
             </Link>
             <Link
               href="/#preguntas-frecuentes"
-              className="text-gray-600 hover:text-blue-600 transition-colors"
+              className="text-gray-600 hover:text-motef-primary transition-colors"
             >
-              FAQ
+              Preguntas Frecuentes
             </Link>
           </div>
         </div>
 
-        {/* Main navbar */}
         <div className="flex items-center justify-between h-20 lg:h-24">
-          {/* Logo */}
           <Link href="/" className="flex items-center group">
             <div className="relative w-48 h-16 sm:w-56 sm:h-20 md:w-64 md:h-22 lg:w-72 lg:h-24">
               <Image
-                src="/LogoTrs.png"
-                alt="motef Logo"
+                src="/Logo.jpg"
+                alt="MOTEF Logo"
                 fill
                 className="object-contain"
                 priority
@@ -78,14 +73,13 @@ const Navbar = () => {
             </div>
           </Link>
 
-          {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center gap-8">
             <Link
               href="/"
               className={`font-medium transition-colors ${
                 isActive("/")
-                  ? "text-blue-600"
-                  : "text-gray-700 hover:text-blue-600"
+                  ? "text-motef-primary"
+                  : "text-gray-700 hover:text-motef-primary"
               }`}
             >
               Inicio
@@ -95,24 +89,29 @@ const Navbar = () => {
               href="/productos"
               className={`font-medium transition-colors ${
                 isActive("/productos")
-                  ? "text-blue-600"
-                  : "text-gray-700 hover:text-blue-600"
+                  ? "text-motef-primary"
+                  : "text-gray-700 hover:text-motef-primary"
               }`}
             >
               Productos
             </Link>
 
             <Link
+              href="/#categorias"
+              className="font-medium transition-colors text-gray-700 hover:text-motef-primary"
+            >
+              Categorías
+            </Link>
+
+            <Link
               href="/#sobre-nosotros"
-              className="font-medium transition-colors text-gray-700 hover:text-blue-600"
+              className="font-medium transition-colors text-gray-700 hover:text-motef-primary"
             >
               Sobre Nosotros
             </Link>
           </nav>
 
-          {/* Actions */}
           <div className="flex items-center gap-3 lg:gap-4">
-            {/* Search - Desktop */}
             <Link
               href="/productos"
               className="hidden lg:flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors text-gray-600"
@@ -121,7 +120,6 @@ const Navbar = () => {
               <span className="text-sm">Buscar</span>
             </Link>
 
-            {/* Cart */}
             <Link
               href="/carrito"
               className="relative p-2 hover:bg-gray-100 rounded-full transition-colors"
@@ -129,13 +127,12 @@ const Navbar = () => {
             >
               <ShoppingCart className="w-6 h-6 text-gray-700" />
               {cartCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-blue-600 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                <span className="absolute -top-1 -right-1 bg-motef-primary text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
                   {cartCount}
                 </span>
               )}
             </Link>
 
-            {/* User Account */}
             {user ? (
               <div className="hidden lg:flex items-center gap-2">
                 <Link
@@ -152,20 +149,19 @@ const Navbar = () => {
               <div className="hidden lg:flex items-center gap-2">
                 <Link
                   href="/login"
-                  className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors"
+                  className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-motef-primary transition-colors"
                 >
                   Iniciar Sesión
                 </Link>
                 <Link
                   href="/registro"
-                  className="px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors"
+                  className="px-4 py-2 text-sm font-medium bg-motef-primary text-white rounded-full hover:bg-motef-primary-dark transition-colors"
                 >
                   Registrarse
                 </Link>
               </div>
             )}
 
-            {/* Mobile Menu Toggle */}
             <button
               onClick={() => setShowMenu(!showMenu)}
               className="lg:hidden p-2 hover:bg-gray-100 rounded-lg transition-colors"
@@ -180,7 +176,6 @@ const Navbar = () => {
           </div>
         </div>
 
-        {/* Mobile Menu */}
         <div
           className={`lg:hidden transition-all duration-300 ease-in-out ${
             showMenu
@@ -194,7 +189,7 @@ const Navbar = () => {
               onClick={() => setShowMenu(false)}
               className={`block px-4 py-3 rounded-lg font-medium transition-colors ${
                 isActive("/")
-                  ? "bg-blue-50 text-blue-600"
+                  ? "bg-orange-50 text-motef-primary"
                   : "text-gray-700 hover:bg-gray-50"
               }`}
             >
@@ -206,11 +201,19 @@ const Navbar = () => {
               onClick={() => setShowMenu(false)}
               className={`block px-4 py-3 rounded-lg font-medium transition-colors ${
                 isActive("/productos")
-                  ? "bg-blue-50 text-blue-600"
+                  ? "bg-orange-50 text-motef-primary"
                   : "text-gray-700 hover:bg-gray-50"
               }`}
             >
               Productos
+            </Link>
+
+            <Link
+              href="/#categorias"
+              onClick={() => setShowMenu(false)}
+              className="block px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+            >
+              Categorías
             </Link>
 
             <Link
@@ -229,7 +232,6 @@ const Navbar = () => {
               Preguntas Frecuentes
             </Link>
 
-            {/* User actions mobile */}
             <div className="pt-4 border-t border-gray-200 space-y-2">
               {user ? (
                 <>
@@ -255,14 +257,14 @@ const Navbar = () => {
                   <Link
                     href="/login"
                     onClick={() => setShowMenu(false)}
-                    className="block px-4 py-3 rounded-lg border-2 border-blue-600 text-blue-600 font-medium text-center"
+                    className="block px-4 py-3 rounded-lg border-2 border-motef-primary text-motef-primary font-medium text-center"
                   >
                     Iniciar Sesión
                   </Link>
                   <Link
                     href="/registro"
                     onClick={() => setShowMenu(false)}
-                    className="block px-4 py-3 rounded-lg bg-blue-600 text-white font-medium text-center"
+                    className="block px-4 py-3 rounded-lg bg-motef-primary text-white font-medium text-center"
                   >
                     Registrarse
                   </Link>

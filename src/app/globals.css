@@ -1,2 +1,90 @@
 @import "tailwindcss";
 
+@layer base {
+  :root {
+    --color-primary: #f48634;
+    --color-primary-dark: #d67328;
+    --color-primary-light: #ff9d52;
+
+    --color-secondary: #e8e8e8;
+    --color-tertiary: #b5b5b5;
+
+    --color-gray-50: #fafafa;
+    --color-gray-100: #f5f5f5;
+    --color-gray-200: #e5e5e5;
+    --color-gray-300: #d4d4d4;
+    --color-gray-400: #a3a3a3;
+    --color-gray-500: #737373;
+    --color-gray-600: #525252;
+    --color-gray-700: #404040;
+    --color-gray-800: #262626;
+    --color-gray-900: #171717;
+  }
+
+  * {
+    @apply border-gray-200;
+  }
+
+  body {
+    @apply bg-white text-gray-900 antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-bold text-gray-900;
+  }
+
+  a {
+    @apply transition-colors duration-200;
+  }
+
+  button {
+    @apply transition-all duration-200;
+  }
+}
+
+@layer utilities {
+  .bg-motef-primary {
+    background-color: var(--color-primary);
+  }
+
+  .bg-motef-primary-dark {
+    background-color: var(--color-primary-dark);
+  }
+
+  .bg-motef-primary-light {
+    background-color: var(--color-primary-light);
+  }
+
+  .bg-motef-secondary {
+    background-color: var(--color-secondary);
+  }
+
+  .bg-motef-tertiary {
+    background-color: var(--color-tertiary);
+  }
+
+  .text-motef-primary {
+    color: var(--color-primary);
+  }
+
+  .text-motef-primary-dark {
+    color: var(--color-primary-dark);
+  }
+
+  .border-motef-primary {
+    border-color: var(--color-primary);
+  }
+
+  .hover\:bg-motef-primary-dark:hover {
+    background-color: var(--color-primary-dark);
+  }
+
+  .hover\:text-motef-primary:hover {
+    color: var(--color-primary);
+  }
+}

@@ -9,21 +9,24 @@ import { Toaster } from "sonner";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://motef.com.ar"),
-  title: "motef - Soportes para Celular, Tablet y Notebook",
+  title: "MOTEF - Tienda Online de Accesorios y Repuestos",
   description:
-    "Tecnología útil y funcional para tu día a día. Soportes de calidad para todos tus dispositivos. Envío gratis desde la segunda unidad.",
+    "Tu tienda online de confianza para motocicletas, bicicletas, aire acondicionado, piletas, artículos de auto y electrodomésticos. Los mejores productos al mejor precio.",
   keywords: [
-    "soportes celular",
-    "soportes tablet",
-    "soportes notebook",
-    "accesorios tecnología",
-    "soporte magnético auto",
-    "elevador notebook",
-    "base refrigerante",
+    "motef",
+    "accesorios moto",
+    "repuestos auto",
+    "bicicletas",
+    "aire acondicionado",
+    "piletas",
+    "electrodomésticos",
+    "tienda online argentina",
+    "accesorios motocicleta",
+    "repuestos bicicleta",
   ],
-  authors: [{ name: "motef" }],
-  creator: "motef",
-  publisher: "motef",
+  authors: [{ name: "MOTEF" }],
+  creator: "MOTEF",
+  publisher: "MOTEF",
   icons: {
     icon: "/favicon.ico",
     shortcut: "/favicon.ico",
@@ -34,23 +37,23 @@ export const metadata: Metadata = {
     type: "website",
     locale: "es_AR",
     url: "https://motef.com.ar",
-    siteName: "motef",
-    title: "motef - Soportes para Celular, Tablet y Notebook",
+    siteName: "MOTEF",
+    title: "MOTEF - Tienda Online de Accesorios y Repuestos",
     description:
-      "Tecnología útil y funcional. Soportes de calidad para todos tus dispositivos.",
+      "Tu tienda online de confianza para motocicletas, bicicletas, aire acondicionado, piletas, artículos de auto y electrodomésticos.",
     images: [
       {
         url: "/og-image.jpg",
         width: 1200,
         height: 630,
-        alt: "motef - Soportes para dispositivos",
+        alt: "MOTEF - Tienda Online",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "motef - Soportes para Celular, Tablet y Notebook",
-    description: "Tecnología útil y funcional para tu día a día",
+    title: "MOTEF - Tienda Online de Accesorios y Repuestos",
+    description: "Los mejores productos al mejor precio",
     images: ["/og-image.jpg"],
   },
   robots: {
@@ -74,15 +77,12 @@ export default function RootLayout({
   return (
     <html lang="es">
       <head>
-        {/* PWA Meta Tags */}
         <link rel="manifest" href="/manifest.json" />
-        <meta name="theme-color" content="#2563eb" />
+        <meta name="theme-color" content="#f48634" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content="motef" />
-
-        {/* Preconnect to external domains */}
+        <meta name="apple-mobile-web-app-title" content="MOTEF" />
         <link rel="preconnect" href="https://res.cloudinary.com" />
         <link rel="dns-prefetch" href="https://res.cloudinary.com" />
       </head>
