@@ -3,10 +3,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 
-// =====================================================
-// TIPOS
-// =====================================================
-
 export interface User {
   id: number;
   email: string;
@@ -31,15 +27,7 @@ interface AuthContextType {
   login: (user: User) => void;
 }
 
-// =====================================================
-// CONTEXT
-// =====================================================
-
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-// =====================================================
-// PROVIDER
-// =====================================================
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -49,21 +37,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
 
-  // ✅ Determinar tipo de ruta
-  const isAdminRoute = pathname.startsWith("/admin");
-  const isCuentaRoute = pathname.startsWith("/cuenta");
+  const isAdminRoute = pathname.startsWith("/panel/admin");
+  const isClienteRoute = pathname.startsWith("/panel/cliente");
   const isCheckoutRoute = pathname.startsWith("/checkout");
   const isAuthRoute = pathname === "/login" || pathname === "/registro";
-  const isPrivateRoute = isAdminRoute || isCuentaRoute || isCheckoutRoute;
+  const isPrivateRoute = isAdminRoute || isClienteRoute || isCheckoutRoute;
 
-  // ✅ Valores computados
   const isAuthenticated = !!user;
   const isAdmin = user?.rol === "admin";
   const isCliente = user?.rol === "cliente";
 
-  /**
-   * Verificar autenticación del usuario
-   */
   const checkAuth = async () => {
     try {
       const res = await fetch("/api/auth/me", {
@@ -86,23 +69,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  /**
-   * Refrescar datos del usuario actual
-   */
   const refreshUser = async () => {
     await checkAuth();
   };
 
-  /**
-   * Login manual (llamar después de login exitoso)
-   */
   const login = (userData: User) => {
     setUser(userData);
   };
 
-  /**
-   * Cerrar sesión
-   */
   const logout = async () => {
     try {
       await fetch("/api/auth/logout", {
@@ -118,45 +92,39 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  // ✅ Verificar auth al montar
   useEffect(() => {
     if (!hasCheckedAuth) {
       checkAuth();
     }
   }, [hasCheckedAuth]);
 
-  // ✅ Protección de rutas
   useEffect(() => {
     if (loading || !hasCheckedAuth) return;
 
-    // Redirigir si no está autenticado en ruta privada
     if (isPrivateRoute && !isAuthenticated) {
       console.log("🔒 Ruta privada sin auth, redirigiendo a /login");
       router.push(`/login?redirect=${encodeURIComponent(pathname)}`);
       return;
     }
 
-    // Redirigir si está autenticado en página de login/registro
     if (isAuthRoute && isAuthenticated) {
       console.log("✅ Ya autenticado, redirigiendo...");
       if (isAdmin) {
-        router.push("/admin");
+        router.push("/panel/admin");
       } else {
-        router.push("/cuenta");
+        router.push("/panel/cliente");
       }
       return;
     }
 
-    // Verificar permisos de admin
     if (isAdminRoute && !isAdmin) {
       console.log("⛔ Acceso denegado a zona admin");
       router.push("/unauthorized");
       return;
     }
 
-    // Verificar permisos de cliente
-    if (isCuentaRoute && !isCliente) {
-      console.log("⛔ Acceso denegado a cuenta de cliente");
+    if (isClienteRoute && !isCliente) {
+      console.log("⛔ Acceso denegado a zona cliente");
       router.push("/unauthorized");
       return;
     }
@@ -167,7 +135,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     isPrivateRoute,
     isAuthRoute,
     isAdminRoute,
-    isCuentaRoute,
+    isClienteRoute,
     isAdmin,
     pathname,
     router,
@@ -185,7 +153,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     login,
   };
 
-  // ✅ Mostrar loading en rutas privadas
   if (loading && isPrivateRoute) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -199,10 +166,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
-
-// =====================================================
-// HOOK
-// =====================================================
 
 export function useAuth() {
   const context = useContext(AuthContext);

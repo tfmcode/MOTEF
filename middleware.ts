@@ -58,7 +58,7 @@ export async function middleware(request: NextRequest) {
       );
     }
 
-    if (path.startsWith("/cuenta") && user.rol !== "cliente") {
+    if (path.startsWith("/panel/cliente") && user.rol !== "cliente") {
       const ip =
         request.headers.get("x-forwarded-for")?.split(",")[0] || "unknown";
       securityLogger.unauthorizedAccess(path, ip, user.id, user.email);
@@ -70,7 +70,12 @@ export async function middleware(request: NextRequest) {
 
     if (isApiRoute) {
       const adminApis = ["/api/admin/", "/api/usuarios"];
-      const clienteApis = ["/api/cuenta/", "/api/carrito", "/api/checkout"];
+      const clienteApis = [
+        "/api/cuenta/",
+        "/api/carrito",
+        "/api/checkout",
+        "/api/pedidos",
+      ];
 
       if (
         adminApis.some((api) => path.startsWith(api)) &&
@@ -121,13 +126,13 @@ export async function middleware(request: NextRequest) {
 function requiresAuth(path: string): boolean {
   const protectedPaths = [
     "/panel",
-    "/cuenta",
     "/api/admin",
     "/api/cuenta",
     "/api/carrito",
     "/api/checkout",
     "/api/usuarios",
     "/api/auth/me",
+    "/api/pedidos",
   ];
 
   return protectedPaths.some((protectedPath) => path.startsWith(protectedPath));
@@ -137,7 +142,6 @@ export const config = {
   matcher: [
     "/api/:path*",
     "/panel/:path*",
-    "/cuenta/:path*",
     "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
   ],
 };

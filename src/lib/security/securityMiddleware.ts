@@ -10,12 +10,13 @@ const PROTECTED_PATHS = [
   "/api/checkout",
   "/api/usuarios",
   "/panel",
-  "/cuenta",
 ];
 
 const PUBLIC_PATHS = [
   "/api/auth/login",
   "/api/auth/registro",
+  "/api/auth/logout",
+  "/api/auth/me",
   "/api/productos",
   "/api/categorias",
   "/login",
@@ -110,6 +111,10 @@ function checkCSRF(req: NextRequest): SecurityCheckResult {
     return { allowed: true };
   }
 
+  if (req.nextUrl.pathname.startsWith("/api/webhooks")) {
+    return { allowed: true };
+  }
+
   const origin = req.headers.get("origin");
   const host = req.headers.get("host");
 
@@ -119,10 +124,6 @@ function checkCSRF(req: NextRequest): SecurityCheckResult {
     `http://${host}`,
     "http://localhost:3000",
   ].filter(Boolean);
-
-  if (req.nextUrl.pathname.startsWith("/api/webhooks")) {
-    return { allowed: true };
-  }
 
   if (origin) {
     const isAllowed = allowedOrigins.some((allowed) =>
