@@ -1,4 +1,3 @@
-// src/app/api/pedidos/[id]/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { verifyJwt } from "@/lib/auth";
 import pool from "@/lib/db";
@@ -21,7 +20,6 @@ export async function GET(
   }
 
   try {
-    // Query principal del pedido con dirección
     const pedidoQuery = `
       SELECT 
         p.id,
@@ -63,7 +61,6 @@ export async function GET(
 
     const pedido = pedidoResult.rows[0];
 
-    // Query para los items del pedido
     const itemsQuery = `
       SELECT 
         dp.id,
@@ -83,7 +80,6 @@ export async function GET(
 
     const itemsResult = await pool.query(itemsQuery, [Number(id)]);
 
-    // Construir respuesta completa
     const response = {
       id: pedido.id,
       numero_pedido: pedido.numero_pedido,

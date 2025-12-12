@@ -20,7 +20,7 @@ interface EmailOptions {
 export async function enviarEmail({ to, subject, html, text }: EmailOptions) {
   try {
     const info = await transporter.sendMail({
-      from: `"motef E-commerce" <${process.env.SMTP_FROM}>`,
+      from: `"MOTEF E-commerce" <${process.env.SMTP_FROM}>`,
       to,
       subject,
       text,
@@ -35,16 +35,8 @@ export async function enviarEmail({ to, subject, html, text }: EmailOptions) {
   }
 }
 
-// ============================================
-// TEMPLATES PARA E-COMMERCE
-// ============================================
-
-/**
- * Email de bienvenida para nuevos clientes
- */
 export function templateBienvenida(nombre: string, email: string) {
-  const urlTienda =
-    process.env.NEXT_PUBLIC_SITE_URL || "https://motef.com.ar";
+  const urlTienda = process.env.NEXT_PUBLIC_SITE_URL || "https://motef.com.ar";
 
   const html = `
     <!DOCTYPE html>
@@ -54,16 +46,16 @@ export function templateBienvenida(nombre: string, email: string) {
       <style>
         body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
         .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 40px 20px; text-align: center; border-radius: 8px 8px 0 0; }
+        .header { background: linear-gradient(135deg, #f48634 0%, #e07020 100%); color: white; padding: 40px 20px; text-align: center; border-radius: 8px 8px 0 0; }
         .content { background-color: #f9f9f9; padding: 30px; border-radius: 0 0 8px 8px; }
-        .button { display: inline-block; background-color: #667eea; color: white; padding: 14px 30px; text-decoration: none; border-radius: 5px; margin: 20px 0; font-weight: bold; }
+        .button { display: inline-block; background-color: #f48634; color: white; padding: 14px 30px; text-decoration: none; border-radius: 5px; margin: 20px 0; font-weight: bold; }
         .footer { text-align: center; margin-top: 20px; font-size: 12px; color: #666; padding: 20px; }
       </style>
     </head>
     <body>
       <div class="container">
         <div class="header">
-          <h1 style="margin: 0;">¡Bienvenido a motef! 🎉</h1>
+          <h1 style="margin: 0;">¡Bienvenido a MOTEF! 🎉</h1>
         </div>
         <div class="content">
           <h2>Hola, ${nombre}!</h2>
@@ -78,10 +70,10 @@ export function templateBienvenida(nombre: string, email: string) {
           
           <p>Si tenés alguna consulta, no dudes en contactarnos.</p>
           
-          <p style="margin-top: 30px;">Saludos,<br><strong>Equipo de motef</strong></p>
+          <p style="margin-top: 30px;">Saludos,<br><strong>Equipo de MOTEF</strong></p>
         </div>
         <div class="footer">
-          <p>© ${new Date().getFullYear()} motef - Todos los derechos reservados</p>
+          <p>© ${new Date().getFullYear()} MOTEF - Todos los derechos reservados</p>
         </div>
       </div>
     </body>
@@ -89,7 +81,7 @@ export function templateBienvenida(nombre: string, email: string) {
   `;
 
   const text = `
-Bienvenido a motef!
+Bienvenido a MOTEF!
 
 Hola, ${nombre}!
 
@@ -101,15 +93,12 @@ Email: ${email}
 Visitá nuestra tienda: ${urlTienda}
 
 Saludos,
-Equipo de motef
+Equipo de MOTEF
   `;
 
   return { html, text };
 }
 
-/**
- * Email de confirmación de pedido
- */
 export function templateConfirmacionPedido(
   nombre: string,
   numeroPedido: string,
@@ -147,7 +136,7 @@ export function templateConfirmacionPedido(
         .header { background-color: #10b981; color: white; padding: 30px 20px; text-align: center; border-radius: 8px 8px 0 0; }
         .content { background-color: #f9f9f9; padding: 30px; border-radius: 0 0 8px 8px; }
         .order-box { background-color: white; border: 2px solid #10b981; padding: 20px; margin: 20px 0; border-radius: 8px; }
-        .button { display: inline-block; background-color: #667eea; color: white; padding: 14px 30px; text-decoration: none; border-radius: 5px; margin: 20px 0; font-weight: bold; }
+        .button { display: inline-block; background-color: #f48634; color: white; padding: 14px 30px; text-decoration: none; border-radius: 5px; margin: 20px 0; font-weight: bold; }
         .footer { text-align: center; margin-top: 20px; font-size: 12px; color: #666; padding: 20px; }
         table { width: 100%; border-collapse: collapse; }
       </style>
@@ -192,10 +181,10 @@ export function templateConfirmacionPedido(
           
           <p>Te enviaremos una notificación cuando tu pedido sea despachado.</p>
           
-          <p style="margin-top: 30px;">Saludos,<br><strong>Equipo de motef</strong></p>
+          <p style="margin-top: 30px;">Saludos,<br><strong>Equipo de MOTEF</strong></p>
         </div>
         <div class="footer">
-          <p>© ${new Date().getFullYear()} motef - Todos los derechos reservados</p>
+          <p>© ${new Date().getFullYear()} MOTEF - Todos los derechos reservados</p>
         </div>
       </div>
     </body>
@@ -228,15 +217,12 @@ Ver pedido: ${urlPedido}
 Te enviaremos una notificación cuando tu pedido sea despachado.
 
 Saludos,
-Equipo de motef
+Equipo de MOTEF
   `;
 
   return { html, text };
 }
 
-/**
- * Email de pedido enviado
- */
 export function templatePedidoEnviado(
   nombre: string,
   numeroPedido: string,
@@ -278,10 +264,10 @@ export function templatePedidoEnviado(
           
           <p>Te notificaremos cuando tu pedido sea entregado.</p>
           
-          <p style="margin-top: 30px;">Saludos,<br><strong>Equipo de motef</strong></p>
+          <p style="margin-top: 30px;">Saludos,<br><strong>Equipo de MOTEF</strong></p>
         </div>
         <div class="footer">
-          <p>© ${new Date().getFullYear()} motef - Todos los derechos reservados</p>
+          <p>© ${new Date().getFullYear()} MOTEF - Todos los derechos reservados</p>
         </div>
       </div>
     </body>
@@ -300,15 +286,12 @@ ${codigoSeguimiento ? `Código de seguimiento: ${codigoSeguimiento}` : ""}
 Te notificaremos cuando tu pedido sea entregado.
 
 Saludos,
-Equipo de motef
+Equipo de MOTEF
   `;
 
   return { html, text };
 }
 
-/**
- * Email de recuperación de contraseña
- */
 export function templateRecuperarPassword(nombre: string, token: string) {
   const urlReset = `${process.env.NEXT_PUBLIC_SITE_URL}/reset-password?token=${token}`;
 
@@ -345,12 +328,12 @@ export function templateRecuperarPassword(nombre: string, token: string) {
           </div>
           
           <p>Si el botón no funciona, copiá y pegá este enlace en tu navegador:</p>
-          <p style="word-break: break-all; color: #667eea;">${urlReset}</p>
+          <p style="word-break: break-all; color: #f48634;">${urlReset}</p>
           
-          <p style="margin-top: 30px;">Saludos,<br><strong>Equipo de motef</strong></p>
+          <p style="margin-top: 30px;">Saludos,<br><strong>Equipo de MOTEF</strong></p>
         </div>
         <div class="footer">
-          <p>© ${new Date().getFullYear()} motef - Todos los derechos reservados</p>
+          <p>© ${new Date().getFullYear()} MOTEF - Todos los derechos reservados</p>
         </div>
       </div>
     </body>
@@ -369,7 +352,7 @@ Restablecé tu contraseña aquí: ${urlReset}
 ⚠️ Este enlace es válido por 1 hora. Si no solicitaste este cambio, podés ignorar este email.
 
 Saludos,
-Equipo de motef
+Equipo de MOTEF
   `;
 
   return { html, text };

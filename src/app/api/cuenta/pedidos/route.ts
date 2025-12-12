@@ -1,4 +1,3 @@
-// src/app/api/cuenta/pedidos/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { verifyJwt } from "@/lib/auth";
 import pool from "@/lib/db";
@@ -12,7 +11,6 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    // Query para obtener todos los pedidos del cliente
     const pedidosQuery = `
       SELECT 
         p.id,

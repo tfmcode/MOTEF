@@ -1,4 +1,3 @@
-// src/app/api/checkout/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { verifyJwt } from "@/lib/auth";
 import pool from "@/lib/db";
@@ -11,8 +10,6 @@ import {
 } from "@/lib/idempotency";
 
 export const runtime = "nodejs";
-
-/** ===== Tipos locales para evitar any ===== */
 
 type CheckoutItem = { producto_id: number; cantidad: number };
 type CheckoutBody = {
@@ -70,7 +67,6 @@ type MPApiError = {
   response?: unknown;
 };
 
-/** Type guards */
 function isMPPreferenceCreateResponse(
   x: unknown
 ): x is MPPreferenceCreateResponse {
@@ -94,7 +90,6 @@ function isMPApiError(x: unknown): x is MPApiError {
   );
 }
 
-/** Utils */
 function isLocalOrInsecure(url: string): boolean {
   try {
     const u = new URL(url);
@@ -119,7 +114,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ message: "No autorizado" }, { status: 403 });
   }
 
-  // URLs base
   const envSite = process.env.NEXT_PUBLIC_SITE_URL?.trim();
   const origin = req.nextUrl?.origin ?? "http://localhost:3000";
   const siteUrl = (
@@ -127,7 +121,6 @@ export async function POST(req: NextRequest) {
   ).replace(/\/+$/, "");
   const useAutoReturn = !isLocalOrInsecure(siteUrl);
 
-  // MP
   const MP_ACCESS_TOKEN = process.env.MERCADOPAGO_ACCESS_TOKEN;
   const isDevelopmentMode =
     !MP_ACCESS_TOKEN ||
@@ -146,7 +139,6 @@ export async function POST(req: NextRequest) {
     const body: CheckoutBody = await req.json();
     const { items, direccion, metodo_pago } = body;
 
-    // Validaciones
     if (!items?.length) {
       return NextResponse.json(
         { message: "El carrito está vacío" },
@@ -172,7 +164,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Idempotencia
     const idempotencyKey = generateCheckoutKey(user.id, items);
     const existingResponse = await checkIdempotency(idempotencyKey);
     if (existingResponse) {
@@ -182,11 +173,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(existingResponse.response);
     }
 
-    // Transacción
     dbClient = await pool.connect();
     await dbClient.query("BEGIN");
 
-    // 1) Dirección
     const direccionResult = await dbClient.query(
       `INSERT INTO direccion (
         usuario_id, nombre_contacto, telefono_contacto, direccion,
@@ -205,7 +194,6 @@ export async function POST(req: NextRequest) {
     );
     const direccionId: number = direccionResult.rows[0].id;
 
-    // 2) Validar productos/stock/precios
     type ProductoLinea = {
       producto_id: number;
       nombre: string;
@@ -286,18 +274,15 @@ export async function POST(req: NextRequest) {
       throw new Error("No hay productos válidos en el carrito");
     }
 
-    // 3) Envío / totales
     const totalItems = productosData.reduce((s, p) => s + p.cantidad, 0);
     const costoEnvio = totalItems >= 2 ? 0 : 5000;
     const total = subtotal + costoEnvio;
 
-    // 4) Número de pedido
     const numeroPedido = `XYN-${Date.now()}-${Math.random()
       .toString(36)
       .substring(2, 8)
       .toUpperCase()}`;
 
-    // 5) Pedido
     const pedidoResult = await dbClient.query(
       `INSERT INTO pedido (
         numero_pedido, usuario_id, direccion_id, subtotal,
@@ -315,7 +300,6 @@ export async function POST(req: NextRequest) {
     );
     const pedidoId: number = pedidoResult.rows[0].id;
 
-    // 6) Detalles + stock (ventas la suma el trigger)
     for (const p of productosData) {
       await dbClient.query(
         `INSERT INTO detalle_pedido (
@@ -343,7 +327,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 7) Mercado Pago
     let initPoint: string | null = null;
     let preferenceId: string | null = null;
 
@@ -396,7 +379,7 @@ export async function POST(req: NextRequest) {
             },
             external_reference: numeroPedido,
             notification_url: `${siteUrl}/api/webhooks/mercadopago`,
-            statement_descriptor: "motef",
+            statement_descriptor: "MOTEF",
           };
           if (useAutoReturn) body.auto_return = "approved";
 
@@ -413,7 +396,6 @@ export async function POST(req: NextRequest) {
             initPoint = preferenceResponse.init_point;
             preferenceId = preferenceResponse.id;
           } else {
-            // Si el SDK devuelve otra forma, intentar extraer seguro
             const maybe = preferenceResponse as unknown as Record<
               string,
               unknown
@@ -458,7 +440,6 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // 8) Vaciar carrito
     await dbClient.query("DELETE FROM carrito WHERE usuario_id = $1", [
       user.id,
     ]);

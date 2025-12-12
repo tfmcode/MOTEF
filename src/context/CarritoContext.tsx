@@ -36,7 +36,7 @@ interface CarritoContextType {
 
 const CarritoContext = createContext<CarritoContextType | undefined>(undefined);
 
-const STORAGE_KEY = "motef_carrito";
+const STORAGE_KEY = "MOTEF_carrito";
 const ENVIO_GRATIS_THRESHOLD = 2;
 const COSTO_ENVIO = 5000;
 
@@ -90,7 +90,6 @@ export function CarritoProvider({ children }: { children: React.ReactNode }) {
     async (producto: Producto, cantidad: number = 1) => {
       setLoading(true);
 
-      // ✅ Toast con loading
       const toastId = toast.loading(`Agregando ${producto.nombre}...`);
 
       try {
@@ -109,7 +108,6 @@ export function CarritoProvider({ children }: { children: React.ReactNode }) {
 
           await loadCarrito();
 
-          // ✅ Toast de éxito con imagen
           toast.success(
             <div className="flex items-center gap-3">
               {producto.imagen_url && (

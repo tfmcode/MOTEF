@@ -1,4 +1,3 @@
-// src/app/api/webhooks/mercadopago/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import pool from "@/lib/db";
 import { MercadoPagoConfig, Payment } from "mercadopago";
@@ -9,7 +8,6 @@ import {
 } from "@/lib/idempotency";
 import crypto from "crypto";
 
-// Configurar Mercado Pago
 const MP_ACCESS_TOKEN = process.env.MERCADOPAGO_ACCESS_TOKEN;
 const MP_WEBHOOK_SECRET = process.env.MERCADOPAGO_WEBHOOK_SECRET;
 
@@ -19,9 +17,6 @@ const client = new MercadoPagoConfig({
 
 const payment = new Payment(client);
 
-/**
- * ✅ Valida la firma del webhook de Mercado Pago
- */
 function validateWebhookSignature(req: NextRequest): boolean {
   if (!MP_WEBHOOK_SECRET) {
     console.warn("⚠️ MERCADOPAGO_WEBHOOK_SECRET no configurado");
@@ -65,18 +60,13 @@ export async function POST(req: NextRequest) {
   let dbClient = null;
 
   try {
-    // ========================================
-    // 1. ✅ LEER Y VALIDAR WEBHOOK
-    // ========================================
     const bodyText = await req.text();
 
-    // Validar firma primero (usa el texto raw)
     if (!validateWebhookSignature(req)) {
       console.error("❌ Webhook rechazado: firma inválida");
       return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
     }
 
-    // Parsear después de validar
     const body = JSON.parse(bodyText);
 
     console.log("📧 Webhook de Mercado Pago recibido:", {
@@ -101,9 +91,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // ========================================
-    // 2. ✅ VERIFICAR IDEMPOTENCIA
-    // ========================================
     const idempotencyKey = generateWebhookKey(paymentId, action);
     const existingResponse = await checkIdempotency(idempotencyKey);
 
@@ -112,9 +99,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(existingResponse.response);
     }
 
-    // ========================================
-    // 3. OBTENER INFO DEL PAGO
-    // ========================================
     const paymentInfo = await payment.get({ id: paymentId });
 
     console.log("💳 Información del pago:", {
@@ -134,9 +118,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // ========================================
-    // 4. INICIAR TRANSACCIÓN
-    // ========================================
     dbClient = await pool.connect();
     await dbClient.query("BEGIN");
 
@@ -153,9 +134,6 @@ export async function POST(req: NextRequest) {
 
     const pedido = pedidoQuery.rows[0];
 
-    // ========================================
-    // 5. ✅ VALIDAR MONTO
-    // ========================================
     const montoPagado = parseFloat(String(paymentInfo.transaction_amount || 0));
     const totalPedido = parseFloat(pedido.total);
     const diferencia = Math.abs(montoPagado - totalPedido);
@@ -186,9 +164,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // ========================================
-    // 6. DETERMINAR ESTADO
-    // ========================================
     let nuevoEstado = pedido.estado;
     let fechaPago = null;
 
@@ -223,9 +198,6 @@ export async function POST(req: NextRequest) {
         console.log("ℹ️ Estado:", paymentInfo.status);
     }
 
-    // ========================================
-    // 7. ACTUALIZAR PEDIDO
-    // ========================================
     const updateQuery = `
       UPDATE pedido
       SET 
@@ -250,9 +222,6 @@ export async function POST(req: NextRequest) {
       pedido.id,
     ]);
 
-    // ========================================
-    // 8. GUARDAR PAGO
-    // ========================================
     const pagoQuery = `
       INSERT INTO pago (
         pedido_id, mercadopago_payment_id, mercadopago_preference_id,
@@ -298,9 +267,6 @@ export async function POST(req: NextRequest) {
       `✅ Pedido ${updateResult.rows[0].numero_pedido} → ${updateResult.rows[0].estado}`
     );
 
-    // ========================================
-    // 9. GUARDAR IDEMPOTENCIA
-    // ========================================
     const response = {
       received: true,
       pedido_id: pedido.id,

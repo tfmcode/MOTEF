@@ -1,13 +1,10 @@
-// src/app/api/categorias/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import pool from "@/lib/db";
 import { z } from "zod";
 
-// ✅ Forzar comportamiento dinámico
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-// ✅ Headers consistentes
 const NO_CACHE_HEADERS = {
   "Cache-Control": "no-cache, no-store, must-revalidate, max-age=0",
   Pragma: "no-cache",
@@ -15,7 +12,6 @@ const NO_CACHE_HEADERS = {
   "X-Content-Type-Options": "nosniff",
 } as const;
 
-// ✅ Schema de validación
 const CategoriaQuerySchema = z.object({
   includeCount: z.enum(["true", "false"]).optional().default("true"),
   includeSubcategorias: z.enum(["true", "false"]).optional().default("true"),
@@ -24,7 +20,6 @@ const CategoriaQuerySchema = z.object({
 
 type CategoriaQuery = z.infer<typeof CategoriaQuerySchema>;
 
-// ✅ Tipos internos
 interface CategoriaRow {
   id: number;
   nombre: string;
@@ -54,16 +49,6 @@ interface CategoriaResponse {
   subcategorias: CategoriaResponse[];
 }
 
-/**
- * GET /api/categorias
- *
- * Obtiene todas las categorías con estructura jerárquica
- *
- * Query Params:
- * - includeCount: "true"|"false" - Incluir conteo de productos (default: true)
- * - includeSubcategorias: "true"|"false" - Incluir subcategorías anidadas (default: true)
- * - soloActivas: "true"|"false" - Solo categorías activas (default: true)
- */
 export async function GET(req: NextRequest): Promise<NextResponse> {
   const requestId = `req_${Date.now()}_${Math.random()
     .toString(36)
@@ -72,7 +57,6 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
   try {
     console.log(`🔍 [${requestId}] GET /api/categorias - Iniciando request`);
 
-    // ✅ Validar query params
     const rawParams = Object.fromEntries(req.nextUrl.searchParams.entries());
     const validationResult = CategoriaQuerySchema.safeParse(rawParams);
 
@@ -97,7 +81,6 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
 
     console.log(`📋 [${requestId}] Parámetros validados:`, params);
 
-    // ✅ Construir query dinámica
     let query = `
       SELECT 
         c.id,
@@ -128,7 +111,6 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       `;
     }
 
-    // ✅ Filtro de categorías activas
     if (soloActivas) {
       query += `
         WHERE c.activo = true
@@ -141,7 +123,6 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       ORDER BY c.orden ASC, c.nombre ASC
     `;
 
-    // ✅ Ejecutar query
     console.log(`🔄 [${requestId}] Ejecutando query en DB...`);
     const startTime = Date.now();
 
@@ -152,11 +133,9 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       `✅ [${requestId}] Query ejecutada en ${duration}ms - ${rows.length} categorías`
     );
 
-    // ✅ Transformar resultados con validación de tipos
     const categoriasMap = new Map<number, CategoriaResponse>();
     const categoriasPrincipales: CategoriaResponse[] = [];
 
-    // Primera pasada: crear todas las categorías
     rows.forEach((row) => {
       const categoria: CategoriaResponse = {
         id: row.id,
@@ -178,35 +157,29 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       categoriasMap.set(row.id, categoria);
     });
 
-    // Segunda pasada: construir jerarquía
     if (params.includeSubcategorias === "true") {
       rows.forEach((row) => {
         const categoria = categoriasMap.get(row.id);
         if (!categoria) return;
 
         if (row.parent_id) {
-          // Es una subcategoría
           const padre = categoriasMap.get(row.parent_id);
           if (padre) {
             padre.subcategorias.push(categoria);
           } else {
-            // El padre no existe o está inactivo, agregar como principal
             console.warn(
               `⚠️ [${requestId}] Categoría ${row.id} tiene parent_id ${row.parent_id} no encontrado`
             );
             categoriasPrincipales.push(categoria);
           }
         } else {
-          // Es una categoría principal
           categoriasPrincipales.push(categoria);
         }
       });
     } else {
-      // No incluir jerarquía, devolver todas las categorías como lista plana
       categoriasMap.forEach((cat) => categoriasPrincipales.push(cat));
     }
 
-    // ✅ Calcular estadísticas
     const totalCategorias = rows.length;
     const categoriasConProductos = includeCount
       ? rows.filter((r) => parseInt(r.productos_count || "0") > 0).length
@@ -215,7 +188,6 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       ? rows.reduce((sum, r) => sum + parseInt(r.productos_count || "0"), 0)
       : undefined;
 
-    // ✅ Respuesta estructurada
     const response = {
       success: true,
       data: categoriasPrincipales,
@@ -243,10 +215,8 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       headers: NO_CACHE_HEADERS,
     });
   } catch (error) {
-    // ✅ Manejo robusto de errores
     console.error(`❌ [${requestId}] Error en GET /api/categorias:`, error);
 
-    // Determinar tipo de error
     const isDatabaseError =
       error instanceof Error &&
       (error.message.includes("connection") ||

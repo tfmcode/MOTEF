@@ -6,22 +6,19 @@ import { usePathname } from "next/navigation";
 import Image from "next/image";
 import { Search, ShoppingCart, Menu, X, User, Package } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import { useCarrito } from "@/context/CarritoContext";
 
 const Navbar = () => {
   const pathname = usePathname();
   const { user } = useAuth();
+  const { totalItems } = useCarrito();
   const [showMenu, setShowMenu] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [cartCount, setCartCount] = useState(0);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  useEffect(() => {
-    setCartCount(0);
   }, []);
 
   const isActive = (path: string) => pathname === path;
@@ -126,9 +123,9 @@ const Navbar = () => {
               aria-label="Carrito de compras"
             >
               <ShoppingCart className="w-6 h-6 text-gray-700" />
-              {cartCount > 0 && (
+              {totalItems > 0 && (
                 <span className="absolute -top-1 -right-1 bg-motef-primary text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
-                  {cartCount}
+                  {totalItems}
                 </span>
               )}
             </Link>
