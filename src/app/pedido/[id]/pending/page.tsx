@@ -42,10 +42,6 @@ export default function PedidoPendingPage() {
               <span className="text-amber-500 mt-0.5">•</span>
               <span>Te enviaremos un email cuando se confirme el pago</span>
             </li>
-            <li className="flex items-start gap-2">
-              <span className="text-amber-500 mt-0.5">•</span>
-          
-            </li>
           </ul>
         </div>
 

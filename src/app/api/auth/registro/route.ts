@@ -1,4 +1,3 @@
-// src/app/api/auth/registro/route.ts
 import { NextResponse } from "next/server";
 import bcrypt from "bcrypt";
 import pool from "@/lib/db";
@@ -25,7 +24,9 @@ const RegistroSchema = z.object({
   telefono: z
     .string()
     .min(8, "Teléfono inválido")
-    .transform(sanitizePhoneNumber),
+    .transform(sanitizePhoneNumber)
+    .optional()
+    .or(z.literal("")),
   password: z.string().min(6, "La contraseña debe tener al menos 6 caracteres"),
 });
 
@@ -76,17 +77,19 @@ export const POST = createApiHandler(
         RETURNING id, nombre, apellido, email, telefono, rol, activo, email_verificado, fecha_registro
       `;
 
+      const finalTelefono = telefono?.trim() || null;
+
       const insertResult = await pool.query(insertQuery, [
         nombre,
         apellido,
         email,
-        telefono,
+        finalTelefono,
         hashedPassword,
       ]);
 
       const nuevoUsuario = insertResult.rows[0];
 
-      console.log(`✅ Cliente registrado: ${nombre} ${apellido} (${email})`);
+      console.log(`Cliente registrado: ${nombre} ${apellido} (${email})`);
 
       return NextResponse.json(
         {
@@ -102,7 +105,7 @@ export const POST = createApiHandler(
         { status: 201 }
       );
     } catch (error) {
-      console.error("❌ Error en registro:", error);
+      console.error("Error en registro:", error);
       return NextResponse.json(
         { mensaje: "Error al crear la cuenta. Intentá de nuevo." },
         { status: 500 }

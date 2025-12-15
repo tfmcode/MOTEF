@@ -128,9 +128,7 @@ export async function POST(req: NextRequest) {
     MP_ACCESS_TOKEN.includes("your_");
 
   if (isDevelopmentMode) {
-    console.warn(
-      "⚠️ Mercado Pago no configurado correctamente - Modo desarrollo"
-    );
+    console.warn("Mercado Pago no configurado correctamente - Modo desarrollo");
   }
 
   let dbClient: PoolClient | null = null;
@@ -168,7 +166,7 @@ export async function POST(req: NextRequest) {
     const existingResponse = await checkIdempotency(idempotencyKey);
     if (existingResponse) {
       console.log(
-        `♻️ Checkout duplicado para usuario ${user.id}, devolviendo respuesta previa`
+        `Checkout duplicado para usuario ${user.id}, devolviendo respuesta previa`
       );
       return NextResponse.json(existingResponse.response);
     }
@@ -323,7 +321,7 @@ export async function POST(req: NextRequest) {
       if (!upd.rowCount)
         throw new Error(`Error al actualizar stock de ${p.nombre}`);
       console.log(
-        `✅ Stock actualizado - ${p.nombre}: ${upd.rows[0].stock} restantes`
+        `Stock actualizado - ${p.nombre}: ${upd.rows[0].stock} restantes`
       );
     }
 
@@ -384,7 +382,7 @@ export async function POST(req: NextRequest) {
           if (useAutoReturn) body.auto_return = "approved";
 
           console.log(
-            "📦 Creando preferencia MP con back_urls:",
+            "Creando preferencia MP con back_urls:",
             body.back_urls,
             "auto_return:",
             body.auto_return ?? "<omitido>"
@@ -420,10 +418,10 @@ export async function POST(req: NextRequest) {
             [preferenceId, pedidoId]
           );
 
-          console.log(`✅ Preferencia MP creada: ${preferenceId}`);
+          console.log(`Preferencia MP creada: ${preferenceId}`);
         } catch (e: unknown) {
           if (isMPApiError(e)) {
-            console.error("❌ Error al crear preferencia MP:", {
+            console.error("Error al crear preferencia MP:", {
               message: e.message,
               status: e.status,
               error: e.error,
@@ -431,7 +429,7 @@ export async function POST(req: NextRequest) {
               response: e.response,
             });
           } else {
-            console.error("❌ Error al crear preferencia MP (desconocido):", e);
+            console.error("Error al crear preferencia MP (desconocido):", e);
           }
           throw new Error(
             "Error al procesar el pago con Mercado Pago. Intentá nuevamente."
@@ -439,10 +437,6 @@ export async function POST(req: NextRequest) {
         }
       }
     }
-
-    await dbClient.query("DELETE FROM carrito WHERE usuario_id = $1", [
-      user.id,
-    ]);
 
     await dbClient.query("COMMIT");
 
@@ -463,12 +457,12 @@ export async function POST(req: NextRequest) {
     if (dbClient) {
       try {
         await dbClient.query("ROLLBACK");
-        console.log("🔄 Transacción revertida por error");
+        console.log("Transacción revertida por error");
       } catch (e) {
-        console.error("❌ Error al hacer rollback:", e);
+        console.error("Error al hacer rollback:", e);
       }
     }
-    console.error("❌ Error en checkout:", error);
+    console.error("Error en checkout:", error);
     return NextResponse.json(
       {
         success: false,

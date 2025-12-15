@@ -19,6 +19,7 @@ export default function RegistroPage() {
 
   const [formData, setFormData] = useState({
     nombre: "",
+    apellido: "",
     email: "",
     password: "",
     confirmPassword: "",
@@ -55,8 +56,10 @@ export default function RegistroPage() {
         },
         body: JSON.stringify({
           nombre: formData.nombre,
+          apellido: formData.apellido,
           email: formData.email,
           password: formData.password,
+          // Teléfono es opcional, se omite si no se pide en el formulario
         }),
       });
 
@@ -131,7 +134,7 @@ export default function RegistroPage() {
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Nombre Completo
+                Nombre
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -143,7 +146,27 @@ export default function RegistroPage() {
                   value={formData.nombre}
                   onChange={handleChange}
                   required
-                  placeholder="Juan Pérez"
+                  placeholder="Juan"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-motef-primary focus:border-transparent transition-all"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Apellido
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <User className="h-5 w-5 text-gray-400" />
+                </div>
+                <input
+                  type="text"
+                  name="apellido"
+                  value={formData.apellido}
+                  onChange={handleChange}
+                  required
+                  placeholder="Pérez"
                   className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-motef-primary focus:border-transparent transition-all"
                 />
               </div>

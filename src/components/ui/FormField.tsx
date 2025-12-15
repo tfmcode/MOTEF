@@ -6,7 +6,7 @@ import { Eye, EyeOff, AlertCircle, CheckCircle } from "lucide-react";
 interface Props {
   label: string;
   name: string;
-  value: string | null | undefined; // ✅ Permitir null y undefined
+  value: string | number | null | undefined;
   onChange: (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
@@ -45,8 +45,7 @@ export default function FormField({
   const [showPassword, setShowPassword] = useState(false);
   const [focused, setFocused] = useState(false);
 
-  // ✅ FIX: Convertir null/undefined a string vacía para evitar el warning
-  const safeValue = value ?? "";
+  const safeValue = (value ?? "").toString();
 
   const isPassword = type === "password";
   const isTextarea = type === "textarea";

@@ -35,7 +35,7 @@ export default function CuentaPage() {
       icon: MapPin,
       href: "/cuenta/direcciones",
       color: "green",
-      disabled: true,
+      disabled: false,
     },
     {
       title: "Seguir Comprando",

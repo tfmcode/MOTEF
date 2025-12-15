@@ -40,12 +40,11 @@ function LoginForm() {
         throw new Error(data.error || "Error al iniciar sesión");
       }
 
-      // ✅ CORREGIDO: Solo pasa el token (AuthContext maneja el resto)
-      login(data.token);
+      login(data.usuario);
 
       const redirect =
         searchParams.get("redirect") ||
-        (data.user?.rol === "admin" ? "/admin" : "/");
+        (data.usuario?.rol === "admin" ? "/admin" : "/");
       router.push(redirect);
     } catch (err) {
       setError(

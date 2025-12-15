@@ -1,6 +1,15 @@
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowRight, TrendingUp, Package, Star } from "lucide-react";
+import {
+  ArrowRight,
+  TrendingUp,
+  Package,
+  Star,
+  Truck,
+  Shield,
+  DollarSign,
+  Zap,
+} from "lucide-react";
 import type { Metadata } from "next";
 
 interface Categoria {
@@ -80,7 +89,7 @@ function ProductCard({ producto }: { producto: Producto }) {
   return (
     <Link
       href={`/productos/${producto.slug}`}
-      className="group bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+      className="group bg-white rounded-xl border border-gray-200 overflow-hidden shadow-lg hover:shadow-2xl hover:border-motef-primary transition-all duration-300 hover:scale-[1.01]"
     >
       <div className="relative aspect-square overflow-hidden bg-gray-100">
         <Image
@@ -90,7 +99,7 @@ function ProductCard({ producto }: { producto: Producto }) {
           className="object-cover group-hover:scale-110 transition-transform duration-500"
         />
         {tieneDescuento && (
-          <div className="absolute top-3 right-3 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg">
+          <div className="absolute top-3 right-3 bg-red-600 text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg transform group-hover:scale-105 transition-transform">
             -{porcentajeDescuento}%
           </div>
         )}
@@ -125,7 +134,7 @@ function ProductCard({ producto }: { producto: Producto }) {
               ${producto.precio_anterior?.toLocaleString()}
             </span>
           )}
-          <span className="text-2xl font-extrabold text-gray-900">
+          <span className="text-3xl font-extrabold text-gray-900 group-hover:text-motef-primary transition-colors">
             ${producto.precio.toLocaleString()}
           </span>
         </div>
@@ -134,7 +143,7 @@ function ProductCard({ producto }: { producto: Producto }) {
           <span className="text-xs text-gray-500">
             {producto.stock > 0 ? `${producto.stock} disponibles` : "Sin stock"}
           </span>
-          <span className="text-motef-primary text-sm font-semibold group-hover:gap-2 inline-flex items-center gap-1 transition-all">
+          <span className="text-motef-primary text-sm font-semibold inline-flex items-center gap-1 transition-all group-hover:gap-2">
             Ver detalles
             <ArrowRight
               size={16}
@@ -151,28 +160,28 @@ function CategoriaCard({ categoria }: { categoria: Categoria }) {
   return (
     <Link
       href={`/productos?categoria=${categoria.slug}`}
-      className="group relative bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+      className="group relative bg-white rounded-xl border border-gray-200 overflow-hidden shadow-md transition-all duration-300 hover:scale-[1.03] hover:shadow-xl"
     >
-      <div className="aspect-video bg-gradient-to-br from-motef-primary to-orange-600 relative overflow-hidden">
+      <div className="aspect-video relative overflow-hidden">
         {categoria.imagen_url ? (
           <Image
             src={categoria.imagen_url}
             alt={categoria.nombre}
             fill
-            className="object-cover opacity-80 group-hover:scale-110 transition-transform duration-500"
+            className="object-cover group-hover:scale-110 transition-transform duration-500"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            <Package size={48} className="text-white opacity-50" />
+          <div className="w-full h-full flex items-center justify-center bg-gray-100">
+            <Package size={48} className="text-motef-primary opacity-50" />
           </div>
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
         <div className="absolute bottom-0 left-0 right-0 p-5">
-          <h3 className="text-xl font-bold text-white mb-1">
+          <h3 className="text-xl font-bold text-white mb-1 group-hover:text-motef-primary-light transition-colors">
             {categoria.nombre}
           </h3>
           {categoria.productos_count !== undefined && (
-            <p className="text-white/90 text-sm">
+            <p className="text-white/90 text-sm font-medium">
               {categoria.productos_count} productos
             </p>
           )}
@@ -182,52 +191,114 @@ function CategoriaCard({ categoria }: { categoria: Categoria }) {
   );
 }
 
-// Ahora HomePage es un Server Component
+function FeatureCard({
+  icon: Icon,
+  title,
+  description,
+}: {
+  icon: React.ElementType;
+  title: string;
+  description: string;
+}) {
+  return (
+    <div className="text-center group bg-white p-6 rounded-xl shadow-lg border-2 border-transparent hover:border-motef-primary transition-all duration-300 hover:-translate-y-1">
+      <div className="w-16 h-16 bg-gradient-to-r from-orange-400 to-motef-primary rounded-full flex items-center justify-center mx-auto mb-4 shadow-xl group-hover:scale-110 transition-transform duration-300">
+        <Icon className="w-8 h-8 text-white" />
+      </div>
+      <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-motef-primary">
+        {title}
+      </h3>
+      <p className="text-gray-600">{description}</p>
+    </div>
+  );
+}
+
+function HeroSection() {
+  const HERO_IMAGE_URL = "/banner.png";
+  const ALT_TEXT =
+    "Variedad de productos, repuestos de motocicletas, bicicletas y aire acondicionado.";
+
+  return (
+    <section className="relative h-[70vh] min-h-[500px] flex items-center justify-center overflow-hidden">
+      <div className="absolute inset-0 w-full h-full">
+        <Image
+          src={HERO_IMAGE_URL}
+          alt={ALT_TEXT}
+          fill
+          priority
+          className="object-cover"
+          sizes="(max-width: 768px) 100vw, 100vw"
+        />
+      </div>
+
+      {/* Capa de contraste mínima solo en la parte inferior para el texto */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+      <div className="absolute inset-0 bg-black/20" />
+
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full text-white">
+        <div className="text-center max-w-4xl mx-auto py-16">
+          <h1
+            className="text-4xl sm:text-6xl lg:text-7xl font-extrabold mb-6 tracking-tight animate-fade-in-down text-white drop-shadow-lg"
+            style={{ textShadow: "0 4px 6px rgba(0,0,0,0.5)" }}
+          >
+            ACCESORIOS Y REPUESTOS PARA TODO LO QUE TE MUEVE
+          </h1>
+
+          <p className="text-lg sm:text-2xl mb-10 font-medium animate-fade-in delay-200 text-gray-100 drop-shadow-md">
+            Motocicletas, Climatización, Hogar y más.{" "}
+            <span className="font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-motef-primary-light to-orange-400 drop-shadow-lg">
+              ¡Encontrá todo en un solo lugar!
+            </span>
+          </p>
+
+          <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in delay-400">
+            <Link
+              href="/productos"
+              className="group inline-flex items-center justify-center gap-2 bg-motef-primary text-white px-8 py-4 rounded-full font-extrabold transition-all duration-300 shadow-2xl 
+                       hover:bg-orange-700 hover:shadow-[0_0_25px_rgba(244,134,52,0.9)] transform hover:scale-[1.05] active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-motef-primary-light"
+            >
+              Comprar Ahora
+              <Zap
+                size={20}
+                className="group-hover:scale-110 transition-transform duration-300"
+              />
+            </Link>
+
+            <Link
+              href="#categorias"
+              className="inline-flex items-center justify-center gap-2 bg-transparent text-white border-2 border-white px-8 py-4 rounded-full font-bold transition-all duration-300 
+                       hover:bg-white/10 hover:border-motef-primary-light hover:shadow-xl transform hover:scale-[1.02]"
+            >
+              Explorar Categorías
+            </Link>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export default async function HomePage() {
   const productosDestacados = await getProductosDestacados();
   const categorias = await getCategorias();
 
   return (
     <main className="min-h-screen bg-gray-50">
-      <section className="bg-gradient-to-br from-motef-primary via-orange-600 to-orange-700 text-white py-16 sm:py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-3xl mx-auto">
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold mb-6">
-              Bienvenido a MOTEF
-            </h1>
-            <p className="text-lg sm:text-xl text-orange-100 mb-8">
-              Tu tienda online de confianza para motocicletas, bicicletas, aire
-              acondicionado, piletas, artículos de auto y electrodomésticos
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link
-                href="/productos"
-                className="inline-flex items-center justify-center gap-2 bg-white text-motef-primary px-8 py-4 rounded-full font-bold hover:bg-orange-50 transition-all duration-300 shadow-xl hover:shadow-2xl hover:scale-105"
-              >
-                Ver Todos los Productos
-                <ArrowRight size={20} />
-              </Link>
-              <Link
-                href="#categorias"
-                className="inline-flex items-center justify-center gap-2 bg-white/10 backdrop-blur-sm text-white border-2 border-white px-8 py-4 rounded-full font-bold hover:bg-white/20 transition-all duration-300"
-              >
-                Explorar Categorías
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
+      <HeroSection />
 
       {categorias.length > 0 && (
-        <section id="categorias" className="py-16 sm:py-20 bg-white">
+        <section id="categorias" className="py-16 sm:py-24 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-12">
+            <div className="text-center mb-16">
+              <span className="text-sm font-bold text-motef-primary uppercase tracking-widest mb-2 inline-block animate-fade-in">
+                Descubrí
+              </span>
               <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-4">
-                Explorá por Categoría
+                Explorá Nuestro Catálogo por Categoría
               </h2>
-              <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-                Encontrá exactamente lo que necesitás navegando por nuestras
-                categorías especializadas
+              <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+                Accesorios y repuestos especializados para vehículos y hogar.
+                Todo lo que necesitás, organizado para vos.
               </p>
             </div>
 
@@ -241,14 +312,14 @@ export default async function HomePage() {
       )}
 
       {productosDestacados.length > 0 && (
-        <section className="py-16 sm:py-20 bg-gray-50">
+        <section className="py-16 sm:py-24 bg-gray-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between mb-12">
               <div>
                 <div className="flex items-center gap-2 mb-2">
                   <TrendingUp className="w-6 h-6 text-motef-primary" />
                   <span className="text-sm font-bold text-motef-primary uppercase tracking-wide">
-                    Destacados
+                    Lo más caliente
                   </span>
                 </div>
                 <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900">
@@ -257,23 +328,23 @@ export default async function HomePage() {
               </div>
               <Link
                 href="/productos"
-                className="hidden sm:inline-flex items-center gap-2 text-motef-primary font-semibold hover:gap-3 transition-all"
+                className="hidden sm:inline-flex items-center gap-2 text-motef-primary font-semibold hover:gap-3 transition-all p-3 rounded-full hover:bg-orange-50"
               >
-                Ver todos
+                Ver todos los productos
                 <ArrowRight size={20} />
               </Link>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
               {productosDestacados.map((producto: Producto) => (
                 <ProductCard key={producto.id} producto={producto} />
               ))}
             </div>
 
-            <div className="text-center mt-8 sm:hidden">
+            <div className="text-center mt-12 sm:hidden">
               <Link
                 href="/productos"
-                className="inline-flex items-center gap-2 bg-motef-primary text-white px-8 py-3 rounded-full font-bold hover:bg-motef-primary-dark transition-all"
+                className="inline-flex items-center gap-2 bg-motef-primary text-white px-8 py-4 rounded-full font-bold hover:bg-motef-primary-dark transition-all shadow-lg"
               >
                 Ver todos los productos
                 <ArrowRight size={18} />
@@ -283,46 +354,29 @@ export default async function HomePage() {
         </section>
       )}
 
-      <section className="py-16 sm:py-20 bg-white">
+      <section className="py-16 sm:py-24 bg-white border-t border-gray-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Package className="w-8 h-8 text-motef-primary" />
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">
-                Envíos a Todo el País
-              </h3>
-              <p className="text-gray-600">
-                Recibí tus productos en la comodidad de tu hogar con envíos
-                seguros y rápidos
-              </p>
-            </div>
+          <h2 className="text-center text-3xl font-bold text-gray-900 mb-12">
+            ¿Por qué elegir MOTEF?
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+            <FeatureCard
+              icon={Truck}
+              title="Envíos Súper Rápidos"
+              description="Despachamos tu pedido en 24hs. Recibí en la comodidad de tu hogar con seguimiento."
+            />
 
-            <div className="text-center">
-              <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Star className="w-8 h-8 text-motef-primary" />
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">
-                Productos de Calidad
-              </h3>
-              <p className="text-gray-600">
-                Seleccionamos cuidadosamente cada producto para garantizar tu
-                satisfacción
-              </p>
-            </div>
+            <FeatureCard
+              icon={Shield}
+              title="Compra 100% Segura"
+              description="Pago protegido por Mercado Pago y tus datos resguardados con encriptación."
+            />
 
-            <div className="text-center">
-              <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <TrendingUp className="w-8 h-8 text-motef-primary" />
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">
-                Mejores Precios
-              </h3>
-              <p className="text-gray-600">
-                Encontrá los mejores productos al mejor precio del mercado
-              </p>
-            </div>
+            <FeatureCard
+              icon={DollarSign}
+              title="Precios de Fábrica"
+              description="Sin intermediarios. Calidad premium al mejor precio garantizado del mercado."
+            />
           </div>
         </div>
       </section>

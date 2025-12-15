@@ -116,7 +116,7 @@ export default function CuentaLayout({
       href: "/cuenta/direcciones",
       icon: MapPin,
       exact: false,
-      disabled: true,
+      disabled: false,
     },
     {
       label: "Configuración",

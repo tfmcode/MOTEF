@@ -4,7 +4,16 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
-import { Search, ShoppingCart, Menu, X, User, Package } from "lucide-react";
+import {
+  Search,
+  ShoppingCart,
+  Menu,
+  X,
+  User,
+  Package,
+  LogIn,
+  UserPlus,
+} from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useCarrito } from "@/context/CarritoContext";
 
@@ -27,39 +36,40 @@ const Navbar = () => {
     <header
       className={`sticky top-0 z-50 transition-all duration-300 ${
         scrolled
-          ? "bg-white/95 backdrop-blur-md shadow-md"
+          ? "bg-white/95 backdrop-blur-md shadow-lg"
           : "bg-white border-b border-gray-200"
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="hidden lg:flex items-center justify-between py-2 text-sm border-b border-gray-100">
           <div className="flex items-center gap-6 text-gray-600">
-            <span className="flex items-center gap-2">
-              <Package className="w-4 h-4" />
+            <span className="flex items-center gap-2 font-medium">
+              <Package className="w-4 h-4 text-motef-primary" />
               Envíos a todo el país
             </span>
             <span>•</span>
-            <span>Pago seguro con Mercado Pago</span>
+            <span className="font-medium">Pago seguro con Mercado Pago</span>
           </div>
           <div className="flex items-center gap-4">
             <Link
               href="/#sobre-nosotros"
-              className="text-gray-600 hover:text-motef-primary transition-colors"
+              className="text-gray-600 hover:text-motef-primary transition-colors font-medium"
             >
               Sobre Nosotros
             </Link>
             <Link
               href="/#preguntas-frecuentes"
-              className="text-gray-600 hover:text-motef-primary transition-colors"
+              className="text-gray-600 hover:text-motef-primary transition-colors font-medium"
             >
-              Preguntas Frecuentes
+              Ayuda
             </Link>
           </div>
         </div>
 
-        <div className="flex items-center justify-between h-20 lg:h-24">
+        <div className="flex items-center justify-between h-16 lg:h-20">
           <Link href="/" className="flex items-center group">
-            <div className="relative w-48 h-16 sm:w-56 sm:h-20 md:w-64 md:h-22 lg:w-72 lg:h-24">
+            {/* Logo visible y centrado */}
+            <div className="relative w-28 h-12 sm:w-36 sm:h-14">
               <Image
                 src="/Logo.jpg"
                 alt="MOTEF Logo"
@@ -70,12 +80,12 @@ const Navbar = () => {
             </div>
           </Link>
 
-          <nav className="hidden lg:flex items-center gap-8">
+          <nav className="hidden lg:flex items-center gap-6">
             <Link
               href="/"
-              className={`font-medium transition-colors ${
+              className={`font-semibold text-sm transition-colors ${
                 isActive("/")
-                  ? "text-motef-primary"
+                  ? "text-motef-primary border-b-2 border-motef-primary pb-1"
                   : "text-gray-700 hover:text-motef-primary"
               }`}
             >
@@ -84,9 +94,9 @@ const Navbar = () => {
 
             <Link
               href="/productos"
-              className={`font-medium transition-colors ${
+              className={`font-semibold text-sm transition-colors ${
                 isActive("/productos")
-                  ? "text-motef-primary"
+                  ? "text-motef-primary border-b-2 border-motef-primary pb-1"
                   : "text-gray-700 hover:text-motef-primary"
               }`}
             >
@@ -95,26 +105,19 @@ const Navbar = () => {
 
             <Link
               href="/#categorias"
-              className="font-medium transition-colors text-gray-700 hover:text-motef-primary"
+              className="font-semibold text-sm transition-colors text-gray-700 hover:text-motef-primary"
             >
               Categorías
             </Link>
-
-            <Link
-              href="/#sobre-nosotros"
-              className="font-medium transition-colors text-gray-700 hover:text-motef-primary"
-            >
-              Sobre Nosotros
-            </Link>
           </nav>
 
-          <div className="flex items-center gap-3 lg:gap-4">
+          <div className="flex items-center gap-2 lg:gap-4">
             <Link
               href="/productos"
-              className="hidden lg:flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors text-gray-600"
+              className="hidden lg:flex items-center gap-2 p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600"
+              aria-label="Buscar productos"
             >
-              <Search className="w-4 h-4" />
-              <span className="text-sm">Buscar</span>
+              <Search className="w-5 h-5" />
             </Link>
 
             <Link
@@ -122,10 +125,10 @@ const Navbar = () => {
               className="relative p-2 hover:bg-gray-100 rounded-full transition-colors"
               aria-label="Carrito de compras"
             >
-              <ShoppingCart className="w-6 h-6 text-gray-700" />
+              <ShoppingCart className="w-6 h-6 text-gray-700 hover:text-motef-primary" />
               {totalItems > 0 && (
-                <span className="absolute -top-1 -right-1 bg-motef-primary text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
-                  {totalItems}
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center shadow-md">
+                  {totalItems > 9 ? "9+" : totalItems}
                 </span>
               )}
             </Link>
@@ -133,11 +136,11 @@ const Navbar = () => {
             {user ? (
               <div className="hidden lg:flex items-center gap-2">
                 <Link
-                  href={user.rol === "admin" ? "/admin" : "/cuenta"}
-                  className="flex items-center gap-2 px-4 py-2 rounded-full hover:bg-gray-100 transition-colors"
+                  href={user.rol === "admin" ? "/panel/admin" : "/panel/cuenta"}
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 rounded-full hover:bg-blue-100 transition-colors border border-blue-200"
                 >
-                  <User className="w-5 h-5 text-gray-700" />
-                  <span className="text-sm font-medium text-gray-700">
+                  <User className="w-5 h-5" />
+                  <span className="text-sm font-semibold">
                     {user.rol === "admin" ? "Admin" : "Mi Cuenta"}
                   </span>
                 </Link>
@@ -146,15 +149,17 @@ const Navbar = () => {
               <div className="hidden lg:flex items-center gap-2">
                 <Link
                   href="/login"
-                  className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-motef-primary transition-colors"
+                  className="px-4 py-2 text-sm font-semibold text-gray-700 hover:text-motef-primary transition-colors flex items-center gap-1"
                 >
-                  Iniciar Sesión
+                  <LogIn size={18} />
+                  Iniciar
                 </Link>
                 <Link
                   href="/registro"
-                  className="px-4 py-2 text-sm font-medium bg-motef-primary text-white rounded-full hover:bg-motef-primary-dark transition-colors"
+                  className="px-4 py-2 text-sm font-semibold bg-motef-primary text-white rounded-full hover:bg-motef-primary-dark transition-all shadow-md flex items-center gap-1 hover:shadow-lg"
                 >
-                  Registrarse
+                  <UserPlus size={18} />
+                  Regístrate
                 </Link>
               </div>
             )}
@@ -173,6 +178,7 @@ const Navbar = () => {
           </div>
         </div>
 
+        {/* Menú móvil */}
         <div
           className={`lg:hidden transition-all duration-300 ease-in-out ${
             showMenu
@@ -213,57 +219,35 @@ const Navbar = () => {
               Categorías
             </Link>
 
-            <Link
-              href="/#sobre-nosotros"
-              onClick={() => setShowMenu(false)}
-              className="block px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
-            >
-              Sobre Nosotros
-            </Link>
-
-            <Link
-              href="/#preguntas-frecuentes"
-              onClick={() => setShowMenu(false)}
-              className="block px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
-            >
-              Preguntas Frecuentes
-            </Link>
-
             <div className="pt-4 border-t border-gray-200 space-y-2">
               {user ? (
                 <>
                   <Link
-                    href={user.rol === "admin" ? "/admin" : "/cuenta"}
+                    href={
+                      user.rol === "admin" ? "/panel/admin" : "/panel/cuenta"
+                    }
                     onClick={() => setShowMenu(false)}
-                    className="block px-4 py-3 rounded-lg bg-gray-100 text-gray-700 font-medium text-center"
+                    className="flex items-center justify-center gap-2 px-4 py-3 rounded-full bg-blue-600 text-white font-medium shadow-md hover:bg-blue-700"
                   >
+                    <User className="w-5 h-5" />
                     {user.rol === "admin" ? "Panel Admin" : "Mi Cuenta"}
                   </Link>
-                  {user.rol === "cliente" && (
-                    <Link
-                      href="/cuenta/pedidos"
-                      onClick={() => setShowMenu(false)}
-                      className="block px-4 py-3 rounded-lg text-gray-700 text-center"
-                    >
-                      Mis Pedidos
-                    </Link>
-                  )}
                 </>
               ) : (
                 <>
                   <Link
                     href="/login"
                     onClick={() => setShowMenu(false)}
-                    className="block px-4 py-3 rounded-lg border-2 border-motef-primary text-motef-primary font-medium text-center"
+                    className="block px-4 py-3 rounded-lg border-2 border-motef-primary text-motef-primary font-medium text-center hover:bg-orange-50"
                   >
                     Iniciar Sesión
                   </Link>
                   <Link
                     href="/registro"
                     onClick={() => setShowMenu(false)}
-                    className="block px-4 py-3 rounded-lg bg-motef-primary text-white font-medium text-center"
+                    className="block px-4 py-3 rounded-lg bg-motef-primary text-white font-medium text-center hover:bg-motef-primary-dark"
                   >
-                    Registrarse
+                    Regístrate
                   </Link>
                 </>
               )}
