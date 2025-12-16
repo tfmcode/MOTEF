@@ -36,8 +36,8 @@ const Navbar = () => {
     <header
       className={`sticky top-0 z-50 transition-all duration-300 ${
         scrolled
-          ? "bg-white/95 backdrop-blur-md shadow-lg"
-          : "bg-white border-b border-gray-200"
+          ? "bg-gray-100/95 backdrop-blur-md shadow-lg"
+          : "bg-gray-100 border-b border-gray-200"
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -66,12 +66,12 @@ const Navbar = () => {
           </div>
         </div>
 
-        <div className="flex items-center justify-between h-16 lg:h-20">
+        <div className="flex items-center justify-between h-20 lg:h-28">
           <Link href="/" className="flex items-center group">
             {/* Logo visible y centrado */}
-            <div className="relative w-28 h-12 sm:w-36 sm:h-14">
+            <div className="relative w-32 h-20 sm:w-48 sm:h-24 lg:w-64 lg:h-34">
               <Image
-                src="/Logo.jpg"
+                src="/Logo.png"
                 alt="MOTEF Logo"
                 fill
                 className="object-contain"
