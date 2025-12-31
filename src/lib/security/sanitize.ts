@@ -170,11 +170,18 @@ export function validateAndSanitize<T>(
 
 export function detectSQLInjection(input: string): boolean {
   const sqlPatterns = [
-    /(\b(SELECT|INSERT|UPDATE|DELETE|DROP|CREATE|ALTER|EXEC|EXECUTE)\b)/i,
-    /(UNION\s+SELECT)/i,
-    /(OR\s+1\s*=\s*1)/i,
-    /(AND\s+1\s*=\s*1)/i,
-    /('|\"|;|--|\*|\/\*|\*\/)/,
+    // Comandos SQL peligrosos (solo cuando son palabras completas)
+    /\b(SELECT|INSERT|UPDATE|DELETE|DROP|CREATE|ALTER|TRUNCATE)\s+/i,
+    /\b(EXEC|EXECUTE)\s*\(/i,
+    // Técnicas de inyección comunes
+    /(UNION\s+(ALL\s+)?SELECT)/i,
+    /(OR|AND)\s+['"]?\d+['"]?\s*=\s*['"]?\d+['"]?/i, // OR 1=1, AND '1'='1'
+    /(['"])\s*;\s*--/i, // '; -- comentario
+    /(['"])\s*;\s*(DROP|DELETE|UPDATE|INSERT)/i, // '; DROP TABLE
+    /--\s*$/m, // Comentario SQL al final de línea
+    /\/\*[\s\S]*?\*\//, // Comentarios multilínea /* */
+    /\bOR\s+['"]?\w+['"]?\s*=\s*['"]?\w+['"]?\s*--/i, // OR 'x'='x'--
+    /;\s*(DROP|DELETE|TRUNCATE|ALTER)\s+/i, // ; DROP TABLE
   ];
 
   return sqlPatterns.some((pattern) => pattern.test(input));
@@ -183,10 +190,15 @@ export function detectSQLInjection(input: string): boolean {
 export function detectXSS(input: string): boolean {
   const xssPatterns = [
     /<script[^>]*>[\s\S]*?<\/script>/gi,
+    /<script[^>]*>/gi, // Tag script abierto
     /<iframe[^>]*>[\s\S]*?<\/iframe>/gi,
-    /javascript:/gi,
-    /on\w+\s*=/gi,
-    /<img[^>]+src[^>]*>/gi,
+    /<iframe[^>]*>/gi, // Tag iframe abierto
+    /javascript\s*:/gi,
+    /on\w+\s*=\s*["']?[^"']*["']?/gi, // Event handlers: onclick="...", onerror=...
+    /<img[^>]+onerror\s*=/gi, // <img onerror=
+    /<svg[^>]*onload\s*=/gi, // <svg onload=
+    /expression\s*\(/gi, // CSS expression()
+    /url\s*\(\s*["']?\s*javascript:/gi, // url(javascript:)
   ];
 
   return xssPatterns.some((pattern) => pattern.test(input));

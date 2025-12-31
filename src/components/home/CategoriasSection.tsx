@@ -78,7 +78,7 @@ function CategoriaCard({ categoria }: { categoria: Categoria }) {
   return (
     <Link
       href={`/productos?categoria=${categoria.slug}`}
-      className="group relative bg-white rounded-2xl overflow-hidden shadow-md transition-all duration-500 hover:scale-[1.05] hover:shadow-2xl border border-gray-200 hover:border-motef-primary animate-scale-in hover:-translate-y-2"
+      className="group relative bg-white rounded-2xl overflow-hidden shadow-md transition-all duration-500 hover:scale-[1.05] hover:shadow-2xl border border-gray-200 hover:border-motef-primary hover:-translate-y-2 h-full"
     >
       {/* Fondo con gradiente según categoría */}
       <div className={`absolute inset-0 bg-gradient-to-br ${config.bgColor} opacity-50`}></div>
@@ -157,8 +157,16 @@ export default function CategoriasSection({ categorias }: { categorias: Categori
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {categorias.map((categoria: Categoria) => (
-            <CategoriaCard key={categoria.id} categoria={categoria} />
+          {categorias.map((categoria: Categoria, index: number) => (
+            <div
+              key={categoria.id}
+              className={`transition-all duration-700 ${
+                isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-12"
+              }`}
+              style={{ transitionDelay: `${index * 100}ms` }}
+            >
+              <CategoriaCard categoria={categoria} />
+            </div>
           ))}
         </div>
       </div>

@@ -11,8 +11,9 @@ export default function LayoutContent({
 }) {
   const pathname = usePathname();
 
+  // ✅ FIX: Rutas corregidas para ocultar layout
   const ocultarLayout =
-    pathname.startsWith("/admin") || pathname.startsWith("/cuenta");
+    pathname.startsWith("/panel/admin") || pathname.startsWith("/panel/cuenta");
 
   return (
     <>

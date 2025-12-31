@@ -101,34 +101,35 @@ export default function AdminLayout({
     );
   }
 
+  // ✅ FIX: Rutas corregidas - ahora apuntan a /panel/admin/*
   const navigation = [
     {
       label: "Dashboard",
-      href: "/admin",
+      href: "/panel/admin",
       icon: Home,
       exact: true,
     },
     {
       label: "Productos",
-      href: "/admin/productos",
+      href: "/panel/admin/productos",
       icon: Package,
       exact: false,
     },
     {
       label: "Pedidos",
-      href: "/admin/pedidos",
+      href: "/panel/admin/pedidos",
       icon: ShoppingCart,
       exact: false,
     },
     {
       label: "Usuarios",
-      href: "/admin/usuarios",
+      href: "/panel/admin/usuarios",
       icon: Users,
       exact: false,
     },
     {
       label: "Configuración",
-      href: "/admin/configuracion",
+      href: "/panel/admin/configuracion",
       icon: Settings,
       exact: false,
       disabled: true,

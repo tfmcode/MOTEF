@@ -2,8 +2,10 @@
 
 import { useState } from "react";
 import { Mail, User, MessageSquare, Send, Check } from "lucide-react";
+import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 
 export default function ContactForm() {
+  const { elementRef, isVisible } = useScrollAnimation({ threshold: 0.2 });
   const [formData, setFormData] = useState({
     nombre: "",
     email: "",
@@ -50,7 +52,7 @@ export default function ContactForm() {
   };
 
   return (
-    <section className="py-16 sm:py-24 bg-gradient-to-br from-gray-50 to-orange-50/30 relative overflow-hidden">
+    <section className="py-16 sm:py-24 bg-gradient-to-br from-gray-50 to-orange-50/30 relative overflow-hidden" ref={elementRef}>
       {/* Elementos decorativos animados */}
       <div className="absolute top-20 left-10 w-72 h-72 bg-motef-primary/5 rounded-full blur-3xl animate-blob"></div>
       <div className="absolute bottom-20 right-10 w-72 h-72 bg-orange-300/10 rounded-full blur-3xl animate-blob animation-delay-2000"></div>
@@ -58,7 +60,9 @@ export default function ContactForm() {
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           {/* Lado izquierdo - Información */}
-          <div className="animate-slide-in-left">
+          <div className={`transition-all duration-700 ${
+            isVisible ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-12"
+          }`}>
             <span className="text-sm font-bold text-motef-primary uppercase tracking-widest mb-2 inline-block">
               Contacto
             </span>
@@ -105,7 +109,9 @@ export default function ContactForm() {
           </div>
 
           {/* Lado derecho - Formulario */}
-          <div className="bg-white rounded-2xl shadow-2xl p-8 border border-gray-100 animate-slide-in-right hover:shadow-3xl transition-shadow duration-500">
+          <div className={`bg-white rounded-2xl shadow-2xl p-8 border border-gray-100 hover:shadow-3xl transition-all duration-700 ${
+            isVisible ? "opacity-100 translate-x-0" : "opacity-0 translate-x-12"
+          }`}>
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Campo Nombre */}
               <div className="group">
@@ -203,11 +209,16 @@ export default function ContactForm() {
                 )}
               </button>
 
-              {/* Mensaje de error */}
+              {/* Mensajes de estado */}
               {submitStatus === "error" && (
-                <p className="text-red-600 text-sm text-center font-medium">
+                <div className="text-red-600 text-sm text-center font-medium bg-red-50 p-4 rounded-xl border-2 border-red-200 animate-slide-in">
                   Hubo un error al enviar tu consulta. Por favor, intentá nuevamente.
-                </p>
+                </div>
+              )}
+              {submitStatus === "success" && (
+                <div className="text-green-700 text-sm text-center font-medium bg-green-50 p-4 rounded-xl border-2 border-green-200 animate-slide-in">
+                  ¡Gracias por tu consulta! Te responderemos a la brevedad.
+                </div>
               )}
             </form>
           </div>

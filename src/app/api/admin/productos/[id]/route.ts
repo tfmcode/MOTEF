@@ -7,6 +7,23 @@ import { sanitizeString, sanitizeInteger } from "@/lib/security/sanitize";
 import { securityLogger } from "@/lib/security/logger";
 import { generarSlug } from "@/lib/slugify";
 
+// Validador personalizado para URLs e imagen (acepta rutas relativas y URLs completas)
+const imagenUrlSchema = z
+  .string()
+  .refine(
+    (val) => {
+      if (!val) return true; // Permitir vacío
+      // Acepta rutas relativas (/img/..., /uploads/...) o URLs completas
+      return (
+        val.startsWith("/") ||
+        val.startsWith("http://") ||
+        val.startsWith("https://")
+      );
+    },
+    { message: "URL de imagen inválida" }
+  )
+  .optional();
+
 const UpdateProductoSchema = z.object({
   nombre: z
     .string()
@@ -24,7 +41,7 @@ const UpdateProductoSchema = z.object({
   precio_anterior: z.number().positive().optional(),
   stock: z.number().int().min(0, "El stock no puede ser negativo"),
   categoria_id: z.number().int().positive(),
-  imagen_url: z.string().url().optional(),
+  imagen_url: imagenUrlSchema,
   sku: z.string().min(1, "SKU es requerido").transform(sanitizeString),
   peso_gramos: z.number().int().positive().optional(),
   destacado: z.boolean(),

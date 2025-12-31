@@ -36,7 +36,7 @@ function ProductCard({ producto }: { producto: Producto }) {
   return (
     <Link
       href={`/productos/${producto.slug}`}
-      className="group bg-white rounded-2xl border-2 border-gray-100 overflow-hidden shadow-md hover:shadow-2xl hover:border-motef-primary transition-all duration-500 hover:scale-[1.05] animate-scale-in hover:-translate-y-2"
+      className="group bg-white rounded-2xl border-2 border-gray-100 overflow-hidden shadow-md hover:shadow-2xl hover:border-motef-primary transition-all duration-500 hover:scale-[1.05] hover:-translate-y-2 h-full flex flex-col"
     >
       <div className="relative aspect-square overflow-hidden bg-gray-50">
         <Image
@@ -58,7 +58,7 @@ function ProductCard({ producto }: { producto: Producto }) {
         )}
       </div>
 
-      <div className="p-6">
+      <div className="p-6 flex-1 flex flex-col">
         {producto.categoria && (
           <p className="text-xs font-bold text-motef-primary uppercase tracking-wide mb-2">
             {producto.categoria.nombre}
@@ -75,7 +75,7 @@ function ProductCard({ producto }: { producto: Producto }) {
           </p>
         )}
 
-        <div className="flex items-baseline gap-2 mb-4">
+        <div className="flex items-baseline gap-2 mb-4 mt-auto">
           {tieneDescuento && (
             <span className="text-sm text-gray-500 line-through">
               ${producto.precio_anterior?.toLocaleString()}
@@ -86,7 +86,7 @@ function ProductCard({ producto }: { producto: Producto }) {
           </span>
         </div>
 
-        <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+        <div className="flex items-center justify-between pt-4 border-t border-gray-100 mt-auto">
           <span className="text-xs text-gray-500 font-medium">
             {producto.stock > 0 ? `${producto.stock} disponibles` : "Sin stock"}
           </span>
@@ -104,12 +104,16 @@ function ProductCard({ producto }: { producto: Producto }) {
 }
 
 export default function ProductosDestacados({ productos }: { productos: Producto[] }) {
+  const { elementRef, isVisible } = useScrollAnimation({ threshold: 0.2 });
+
   if (productos.length === 0) return null;
 
   return (
-    <section className="py-16 sm:py-24 bg-white">
+    <section className="py-16 sm:py-24 bg-white" ref={elementRef}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between mb-12">
+        <div className={`flex items-center justify-between mb-12 transition-all duration-700 ${
+          isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+        }`}>
           <div>
             <div className="flex items-center gap-2 mb-2">
               <TrendingUp className="w-6 h-6 text-motef-primary" />
@@ -131,8 +135,16 @@ export default function ProductosDestacados({ productos }: { productos: Producto
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-          {productos.map((producto: Producto) => (
-            <ProductCard key={producto.id} producto={producto} />
+          {productos.map((producto: Producto, index: number) => (
+            <div
+              key={producto.id}
+              className={`transition-all duration-700 ${
+                isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-12"
+              }`}
+              style={{ transitionDelay: `${index * 100}ms` }}
+            >
+              <ProductCard producto={producto} />
+            </div>
           ))}
         </div>
 
